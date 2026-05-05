@@ -153,6 +153,45 @@ footer.foot { color: var(--muted); font-size: 12px; padding: 32px 28px; text-ali
 .scan-meter .label { font-family: var(--mono); font-size: 12px; color: var(--muted); }
 .scan-meter .progress { flex: 1; max-width: 220px; height: 4px; background: var(--panel-2); border-radius: 999px; overflow: hidden; }
 .scan-meter .progress > span { display:block; height:100%; background: linear-gradient(90deg, var(--accent), var(--accent-2)); }
+
+/* Generating banner */
+.generating-banner { display:flex; align-items:center; gap:12px; padding:12px 16px; background:rgba(245,158,11,.1); border:1px solid rgba(245,158,11,.35); border-radius:10px; color:var(--warn); font-size:13.5px; margin-bottom:14px; }
+.generating-banner .spin { width:14px; height:14px; border:2px solid rgba(245,158,11,.35); border-top-color:var(--warn); border-radius:50%; animation:_spin .8s linear infinite; flex-shrink:0; }
+@keyframes _spin { to { transform:rotate(360deg); } }
+
+/* Workspace bar */
+.workspace-bar { display:flex; align-items:center; gap:12px; flex-wrap:wrap; padding:11px 16px; background:var(--panel); border:1px solid var(--border-hi); border-radius:10px; margin-bottom:14px; }
+.workspace-bar .ws-stat { font-family:var(--mono); font-size:12px; color:var(--muted); }
+.workspace-bar .ws-stat strong { color:var(--text); }
+.workspace-bar .ws-spacer { flex:1; }
+
+/* Evidence filter bar */
+.ev-filter-bar { position:sticky; top:54px; z-index:40; background:var(--bg); padding:8px 0 6px; border-bottom:1px solid var(--border); margin-bottom:8px; display:flex; gap:6px; flex-wrap:wrap; align-items:center; }
+.ev-filter-bar select { width:auto; padding:5px 9px; font-size:12px; font-family:var(--mono); border-radius:7px; border:1px solid var(--border); background:#0a0e13; color:var(--text); }
+.ev-filter-bar input.ev-search { flex:1; min-width:130px; padding:5px 9px; font-size:12px; font-family:var(--mono); border-radius:7px; border:1px solid var(--border); background:#0a0e13; color:var(--text); }
+.ev-pill-btn { padding:4px 10px; border-radius:999px; border:1px solid var(--border); background:var(--panel-2); color:var(--muted); font:600 11px/1.5 var(--mono); cursor:pointer; letter-spacing:.04em; transition:border-color .12s,color .12s; }
+.ev-pill-btn:hover { border-color:var(--border-hi); color:var(--text); }
+.ev-pill-btn.active { border-color:var(--accent); color:var(--accent); background:rgba(94,234,212,.07); }
+
+/* Evidence card view */
+.ev-card-item { border:1px solid var(--border); border-radius:8px; margin-bottom:5px; overflow:hidden; }
+.ev-card-head { display:flex; align-items:center; gap:8px; padding:7px 12px; cursor:pointer; background:var(--panel-2); font-size:12px; user-select:none; }
+.ev-card-head:hover { background:var(--panel-3); }
+.ev-card-body { padding:10px 12px; font:12px/1.5 var(--mono); color:var(--muted); display:none; }
+.ev-card-item.ev-open .ev-card-body { display:block; }
+.ev-svc-tag { font:700 10px/1.4 var(--mono); padding:1px 6px; border-radius:4px; background:rgba(94,234,212,.1); color:var(--accent); border:1px solid rgba(94,234,212,.2); flex-shrink:0; }
+
+/* Evidence table view */
+.ev-table { width:100%; border-collapse:collapse; font-size:12.5px; font-family:var(--mono); }
+.ev-table th { text-align:left; padding:6px 10px; color:var(--muted); font-weight:600; font-size:11px; text-transform:uppercase; letter-spacing:.06em; border-bottom:1px solid var(--border); }
+.ev-table td { padding:6px 10px; border-bottom:1px solid var(--border); vertical-align:middle; max-width:0; }
+.ev-table tr:hover td { background:var(--panel-2); }
+.ev-table .ev-api { color:var(--accent-2); overflow:hidden; text-overflow:ellipsis; white-space:nowrap; max-width:180px; }
+.ev-table .ev-sum { color:var(--muted); overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+
+/* Inline finding edit */
+.find-edit-area { width:100%; margin-top:6px; padding:7px 9px; border-radius:6px; border:1px solid var(--accent); background:#050709; color:var(--text); font:13.5px/1.4 inherit; resize:vertical; min-height:54px; display:block; }
+.find-editbar { margin-top:5px; display:flex; gap:6px; }
 </style>
 </head>
 <body>
@@ -257,6 +296,24 @@ footer.foot { color: var(--muted); font-size: 12px; padding: 32px 28px; text-ali
 
   <!-- RESULTS / REPORT -->
   <section id="report" class="hidden">
+
+    <!-- Generating banner (paid but Claude not done yet) -->
+    <div id="generatingBanner" class="generating-banner hidden">
+      <span class="spin"></span>
+      <span>Your AI-graded report is being generated. This usually takes 1–2 minutes.</span>
+      <button class="btn sm" onclick="location.reload()" style="margin-left:auto;flex-shrink:0">Refresh</button>
+    </div>
+
+    <!-- Workspace bar (paid + report_ready) -->
+    <div id="workspaceBar" class="workspace-bar hidden">
+      <span class="ws-stat"><strong id="wsResolvedCount">0 of 0</strong> findings resolved</span>
+      <span class="ws-stat" id="wsLastEdited"></span>
+      <span class="ws-spacer"></span>
+      <a class="btn sm" id="wsDownloadHtml" target="_blank" rel="noopener" href="#">↓ HTML report</a>
+      <a class="btn sm" id="wsDownloadJson" target="_blank" rel="noopener" href="#">↓ JSON</a>
+      <button class="btn ghost sm" id="wsResetEdits" style="color:var(--muted)">Reset edits</button>
+    </div>
+
     <div style="display:flex; align-items:flex-end; justify-content:space-between; gap:14px; flex-wrap:wrap; margin-bottom: 6px;">
       <div>
         <span class="eyebrow" id="reportEyebrow">Free-tier preview · heuristic scoring</span>
@@ -317,8 +374,24 @@ footer.foot { color: var(--muted); font-size: 12px; padding: 32px 28px; text-ali
       <h3>Strengths</h3>
       <ul id="strList" style="padding-left: 20px;"></ul>
       <div style="margin-top:18px; display:flex; gap:8px; flex-wrap:wrap;">
-        <a class="btn primary" id="dlHtml" target="_blank" rel="noopener">Download HTML report ↗</a>
-        <a class="btn" id="dlJson" target="_blank" rel="noopener">Download JSON</a>
+        <a class="btn primary hidden" id="dlHtml" target="_blank" rel="noopener">Download HTML report ↗</a>
+        <a class="btn hidden" id="dlJson" target="_blank" rel="noopener">Download JSON</a>
+      </div>
+
+      <!-- Evidence catalog -->
+      <div id="evidenceSection" class="hidden" style="margin-top:28px;">
+        <h3 style="margin-bottom:6px;">Evidence catalog <span id="evCount" style="font-weight:400;color:var(--muted);font-size:13px;font-family:var(--mono);"></span></h3>
+        <div class="ev-filter-bar" id="evFilterBar">
+          <select id="evServiceSel"></select>
+          <select id="evRegionSel"></select>
+          <div id="evStatusPills" style="display:flex;gap:4px;flex-wrap:wrap;"></div>
+          <input class="ev-search" id="evSearch" placeholder="Search API, summary, or ID…">
+          <button class="btn sm" id="evExpandAll">Expand all</button>
+          <button class="btn sm" id="evCollapseAll">Collapse all</button>
+          <button class="ev-pill-btn active" id="evCardViewBtn">Card</button>
+          <button class="ev-pill-btn" id="evTableViewBtn">Table</button>
+        </div>
+        <div id="evList"></div>
       </div>
     </div>
   </section>
@@ -346,7 +419,14 @@ footer.foot { color: var(--muted); font-size: 12px; padding: 32px 28px; text-ali
 
 <script>
 const $ = (id) => document.getElementById(id);
-const STATE = { scanId: null, token: null, results: null, isPaid: false, openControl: null };
+const STATE = {
+  scanId: null, token: null, results: null, isPaid: false, openControl: null,
+  demo: false, gideonMsgCount: 0,
+  edits: {},         // { [target_path]: edit_row }
+  evidenceData: [],
+  evidenceView: 'card',
+  evidenceFilters: { service: 'all', region: 'all', status: 'all', search: '' },
+};
 
 function toast(msg, isErr) { const t = $('toast'); t.textContent = msg; t.classList.toggle('error', !!isErr); t.classList.remove('hidden'); setTimeout(() => t.classList.add('hidden'), 3500); }
 
@@ -467,15 +547,29 @@ function renderReport(res, opts) {
     $('paid').classList.remove('hidden'); $('paywallWrap').classList.add('hidden');
     $('critList').innerHTML = (res.critical_actions || []).map(c => '<li>'+escapeHtml(c)+'</li>').join('');
     $('strList').innerHTML = (res.strengths || []).map(s => '<li>'+escapeHtml(s)+'</li>').join('');
-    if (STATE.token) {
-      $('dlHtml').href = '/api/scan/' + STATE.scanId + '/report?token=' + encodeURIComponent(STATE.token) + '&format=html';
-      $('dlJson').href = '/api/scan/' + STATE.scanId + '/report?token=' + encodeURIComponent(STATE.token) + '&format=json';
-    } else {
-      $('dlHtml').classList.add('hidden'); $('dlJson').classList.add('hidden');
-    }
     $('gideonOpen').classList.remove('hidden');
+
+    // Workspace bar / generating banner
+    if (opts.reportReady) {
+      $('generatingBanner').classList.add('hidden');
+      $('workspaceBar').classList.remove('hidden');
+      if (STATE.token) {
+        $('wsDownloadHtml').href = '/api/scan/' + STATE.scanId + '/report?token=' + encodeURIComponent(STATE.token) + '&format=html';
+        $('wsDownloadJson').href = '/api/scan/' + STATE.scanId + '/report?token=' + encodeURIComponent(STATE.token) + '&format=json';
+      }
+      $('evidenceSection').classList.remove('hidden');
+      if (!opts.demo) {
+        loadServerEdits();
+      }
+      renderEvidence(res.evidence || []);
+    } else {
+      $('workspaceBar').classList.add('hidden');
+      $('evidenceSection').classList.add('hidden');
+    }
   } else {
     $('paid').classList.add('hidden'); $('paywallWrap').classList.remove('hidden');
+    $('workspaceBar').classList.add('hidden');
+    $('generatingBanner').classList.add('hidden');
     renderPaywallBlur(res);
     $('gideonOpen').classList.add('hidden');
   }
@@ -491,6 +585,10 @@ function renderReport(res, opts) {
   // Wire resolved checkboxes
   ctrlHost.querySelectorAll('.finding .check').forEach(cb => {
     cb.addEventListener('click', (e) => { e.stopPropagation(); toggleResolved(cb.dataset.fid); });
+  });
+  // Wire finding inline-edit buttons
+  ctrlHost.querySelectorAll('.find-edit-btn').forEach(btn => {
+    btn.addEventListener('click', (e) => { e.stopPropagation(); openEditMode(btn.dataset.fid, btn.dataset.field); });
   });
   STATE.isPaid = !!opts.paid;
 }
@@ -518,16 +616,27 @@ function renderControlRow(c, paid) {
 function renderControlDetail(c, resolved) {
   const findings = (c.findings || []).slice().sort((a,b) => sevRank(b.severity) - sevRank(a.severity));
   const fHtml = findings.map(f => {
-    const isResolved = resolved[f.id];
+    const useServer = STATE.isPaid && !STATE.demo;
+    const isResolved = useServer
+      ? STATE.edits['findings.' + f.id]?.new_value === 'true'
+      : !!(resolved[f.id]);
+    const editedTitle = useServer ? (STATE.edits['findings.' + f.id + '.title']?.new_value || null) : null;
+    const editedDesc  = useServer ? (STATE.edits['findings.' + f.id + '.description']?.new_value || null) : null;
+    const isEdited = !!(editedTitle || editedDesc);
+    const editBtn = (field) => useServer
+      ? '<button class="btn ghost sm find-edit-btn" data-fid="' + escapeHtml(f.id) + '" data-field="' + field + '" style="font-size:11px;padding:2px 7px">Edit</button>'
+      : '';
     return [
       '<div class="finding ' + escapeHtml(f.severity) + (isResolved ? ' resolved' : '') + '" id="f_' + escapeHtml(f.id) + '">',
       '  <div class="head">',
       '    <input type="checkbox" class="check" data-fid="' + escapeHtml(f.id) + '" ' + (isResolved ? 'checked' : '') + '>',
       '    <span class="pill ' + sevPillClass(f.severity) + '">' + escapeHtml(f.severity) + '</span>',
-      '    <span class="title">' + escapeHtml(f.title) + '</span>',
-      '    ' + (f.human_edited ? '<span class="edited-badge">[Reviewer-edited: was ' + escapeHtml(f.human_edited.original) + ']</span>' : ''),
+      '    <span class="title">' + escapeHtml(editedTitle || f.title) + '</span>',
+      isEdited ? '<span class="edited-badge">edited by you</span>' : '',
+      editBtn('title'),
       '  </div>',
-      '  <div class="desc">' + escapeHtml(f.description) + '</div>',
+      '  <div class="desc" id="fdesc_' + escapeHtml(f.id) + '">' + escapeHtml(editedDesc || f.description || '') + '</div>',
+      useServer ? '<div style="margin-top:2px;">' + editBtn('description') + '</div>' : '',
       f.remediation ? '<pre class="cli">' + escapeHtml(f.remediation) + '</pre>' : '',
       '</div>'
     ].join('');
@@ -560,20 +669,44 @@ function toggleControl(cid) {
   if (!wasOpen && STATE.isPaid && STATE.token) loadGideonContext(cid);
 }
 
-function toggleResolved(fid) {
-  const map = loadResolved(STATE.scanId); map[fid] = !map[fid]; if (!map[fid]) delete map[fid];
-  saveResolved(STATE.scanId, map);
+async function toggleResolved(fid) {
+  if (!STATE.isPaid || STATE.demo) {
+    // Demo / free: localStorage only
+    const map = loadResolved(STATE.scanId); map[fid] = !map[fid]; if (!map[fid]) delete map[fid];
+    saveResolved(STATE.scanId, map);
+    const el = $('f_' + fid);
+    if (el) { el.classList.toggle('resolved', !!map[fid]); const cb = el.querySelector('.check'); if (cb) cb.checked = !!map[fid]; }
+    recomputeResolved(STATE.results);
+    return;
+  }
+  // Paid: server-backed
+  const path = 'findings.' + fid;
+  const nowResolved = !(STATE.edits[path]?.new_value === 'true');
   const el = $('f_' + fid);
-  if (el) el.classList.toggle('resolved');
+  if (el) { el.classList.toggle('resolved', nowResolved); const cb = el.querySelector('.check'); if (cb) cb.checked = nowResolved; }
+  try {
+    await fetch('/api/scan/' + STATE.scanId + '/edit?token=' + encodeURIComponent(STATE.token), {
+      method: 'POST', headers: {'content-type':'application/json'},
+      body: JSON.stringify({ edit_type: 'resolve', target_path: path, new_value: String(nowResolved) })
+    });
+    if (nowResolved) STATE.edits[path] = { edit_type: 'resolve', target_path: path, new_value: 'true', created_at: Date.now() };
+    else delete STATE.edits[path];
+  } catch { toast('Could not save resolved state', true); }
   recomputeResolved(STATE.results);
+  updateWorkspaceBar();
 }
 
 function recomputeResolved(res) {
   if (!res || !STATE.scanId) return;
-  const map = loadResolved(STATE.scanId);
+  const useServer = STATE.isPaid && !STATE.demo;
+  const map = useServer ? null : loadResolved(STATE.scanId);
   let total = 0; let resolved = 0;
   for (const c of (res.controls || [])) {
-    for (const f of (c.findings || [])) { total++; if (map[f.id]) resolved++; }
+    for (const f of (c.findings || [])) {
+      total++;
+      if (useServer) { if (STATE.edits['findings.' + f.id]?.new_value === 'true') resolved++; }
+      else { if (map[f.id]) resolved++; }
+    }
   }
   $('resolvedCounter').textContent = resolved + ' of ' + total + ' resolved';
   $('resolvedBar').style.width = total ? (resolved/total*100) + '%' : '0%';
@@ -589,6 +722,11 @@ function renderPaywallBlur(res) {
 
 $('buyBtn').onclick = async () => {
   if (!STATE.scanId) { toast('Run a scan first', true); return; }
+  if (STATE.demo) {
+    toast('This is the AcmePay demo. Connect AWS and run a real scan to purchase a report.', true);
+    document.getElementById('connect')?.scrollIntoView({ behavior: 'smooth' });
+    return;
+  }
   const r = await fetch('/api/scan/' + STATE.scanId + '/purchase', { method: 'POST' });
   const d = await r.json();
   if (!r.ok) { toast(d.error || 'Checkout failed', true); return; }
@@ -633,12 +771,11 @@ $('buyBtn').onclick = async () => {
     if (r.ok) {
       const res = await r.json();
       STATE.results = res;
-      // If paid + Claude analysis isn't done yet, status endpoint reflects it
       const sr = await fetch('/api/scan/' + STATE.scanId + '/status'); const sd = await sr.json();
       const orgName = sd.org_name;
-      renderReport(res, { paid: !!STATE.token, orgName });
-      // If paid but report.html isn't ready, poll until it is
-      if (STATE.token && (!sd.purchase || !sd.purchase.report_ready)) {
+      const reportReady = !!(STATE.token && sd.purchase?.report_ready);
+      renderReport(res, { paid: !!STATE.token, orgName, reportReady });
+      if (STATE.token && !reportReady) {
         pollUntilReady();
       }
     }
@@ -646,19 +783,130 @@ $('buyBtn').onclick = async () => {
 })();
 
 async function pollUntilReady() {
-  for (let i = 0; i < 24; i++) {
-    await new Promise(r => setTimeout(r, 2500));
+  $('generatingBanner').classList.remove('hidden');
+  for (let i = 0; i < 60; i++) {
+    await new Promise(r => setTimeout(r, 5000));
     const sr = await fetch('/api/scan/' + STATE.scanId + '/status'); const sd = await sr.json();
     if (sd.purchase && sd.purchase.report_ready) {
-      // Refresh results with full Claude analysis
+      $('generatingBanner').classList.add('hidden');
       const rr = await fetch('/api/scan/' + STATE.scanId + '/results?token=' + encodeURIComponent(STATE.token));
       const res = await rr.json(); STATE.results = res;
-      renderReport(res, { paid: true, orgName: sd.org_name });
+      renderReport(res, { paid: true, orgName: sd.org_name, reportReady: true });
       toast('Full AI report ready', false);
       return;
     }
   }
 }
+
+// ---------- Server edits ----------
+
+async function loadServerEdits() {
+  if (!STATE.token || !STATE.scanId) return;
+  try {
+    const r = await fetch('/api/scan/' + STATE.scanId + '/edits?token=' + encodeURIComponent(STATE.token));
+    if (!r.ok) return;
+    const d = await r.json();
+    STATE.edits = {};
+    for (const edit of (d.edits || [])) STATE.edits[edit.target_path] = edit;
+    applyEditsToDOM();
+  } catch {}
+}
+
+function applyEditsToDOM() {
+  for (const [path, edit] of Object.entries(STATE.edits)) {
+    if (edit.edit_type === 'resolve') {
+      const fid = path.replace(/^findings\./, '');
+      const el = $('f_' + fid);
+      if (!el) continue;
+      const val = edit.new_value === 'true';
+      el.classList.toggle('resolved', val);
+      const cb = el.querySelector('.check'); if (cb) cb.checked = val;
+    } else if (edit.edit_type === 'edit') {
+      const parts = path.split('.');
+      if (parts.length < 3) continue;
+      const fid = parts[1]; const field = parts[2];
+      const el = $('f_' + fid); if (!el) continue;
+      if (field === 'title') {
+        const t = el.querySelector('.title'); if (t) t.textContent = edit.new_value;
+        if (!el.querySelector('.edited-badge')) {
+          const head = el.querySelector('.head');
+          if (head) head.insertAdjacentHTML('beforeend', '<span class="edited-badge">edited by you</span>');
+        }
+      } else if (field === 'description') {
+        const d2 = el.querySelector('.desc'); if (d2) d2.textContent = edit.new_value;
+      }
+    }
+  }
+  recomputeResolved(STATE.results);
+  updateWorkspaceBar();
+}
+
+function updateWorkspaceBar() {
+  if (!STATE.results) return;
+  let totalFindings = 0; let resolvedCount = 0; let lastAt = 0;
+  for (const c of (STATE.results.controls || [])) {
+    for (const f of (c.findings || [])) {
+      totalFindings++;
+      if (STATE.edits['findings.' + f.id]?.new_value === 'true') resolvedCount++;
+    }
+  }
+  for (const edit of Object.values(STATE.edits)) { if ((edit.created_at || 0) > lastAt) lastAt = edit.created_at || 0; }
+  $('wsResolvedCount').textContent = resolvedCount + ' of ' + totalFindings;
+  $('wsLastEdited').textContent = lastAt ? 'Last edit: ' + new Date(lastAt).toLocaleTimeString() : '';
+}
+
+async function saveEdit(fid, field, newValue) {
+  const path = 'findings.' + fid + '.' + field;
+  await fetch('/api/scan/' + STATE.scanId + '/edit?token=' + encodeURIComponent(STATE.token), {
+    method: 'POST', headers: {'content-type':'application/json'},
+    body: JSON.stringify({ edit_type: 'edit', target_path: path, new_value: newValue })
+  });
+  STATE.edits[path] = { edit_type: 'edit', target_path: path, new_value: newValue, created_at: Date.now() };
+  updateWorkspaceBar();
+}
+
+function openEditMode(fid, field) {
+  const el = $('f_' + fid); if (!el) return;
+  const isTitle = field === 'title';
+  const targetEl = isTitle ? el.querySelector('.title') : el.querySelector('.desc');
+  if (!targetEl) return;
+  const orig = targetEl.textContent;
+  const ta = document.createElement('textarea');
+  ta.className = 'find-edit-area';
+  ta.value = orig;
+  const saveBtn = document.createElement('button');
+  saveBtn.className = 'btn primary sm'; saveBtn.textContent = 'Save';
+  const cancelBtn = document.createElement('button');
+  cancelBtn.className = 'btn sm'; cancelBtn.textContent = 'Cancel';
+  const bar = document.createElement('div'); bar.className = 'find-editbar';
+  bar.append(saveBtn, cancelBtn);
+  const wrap = document.createElement('div'); wrap.append(ta, bar);
+  targetEl.replaceWith(wrap); ta.focus();
+  cancelBtn.onclick = () => wrap.replaceWith(targetEl);
+  saveBtn.onclick = async () => {
+    const v = ta.value.trim(); if (!v) return;
+    try { await saveEdit(fid, field, v); } catch { toast('Edit failed to save', true); return; }
+    const newEl = document.createElement(isTitle ? 'span' : 'div');
+    newEl.className = isTitle ? 'title' : 'desc'; newEl.textContent = v;
+    wrap.replaceWith(newEl);
+    const head = el.querySelector('.head');
+    if (head && !head.querySelector('.edited-badge'))
+      head.insertAdjacentHTML('beforeend', '<span class="edited-badge">edited by you</span>');
+    toast('Saved', false);
+  };
+}
+
+async function deleteAllEdits() {
+  if (!confirm('Reset all edits and resolved marks for this scan?')) return;
+  try {
+    await fetch('/api/scan/' + STATE.scanId + '/edit?token=' + encodeURIComponent(STATE.token), { method: 'DELETE' });
+    STATE.edits = {};
+    renderReport(STATE.results, { paid: true, orgName: STATE.results.org_name || '', reportReady: true });
+    toast('Edits reset', false);
+  } catch { toast('Reset failed', true); }
+}
+
+$('wsResetEdits').addEventListener('click', deleteAllEdits);
 
 // ---------- Gideon ----------
 $('gideonOpen').addEventListener('click', () => {
@@ -709,6 +957,126 @@ async function sendGideon() {
 }
 $('gideonSend').addEventListener('click', sendGideon);
 $('gideonInput').addEventListener('keydown', (e) => { if (e.key === 'Enter') sendGideon(); });
+
+// ---------- Evidence catalog ----------
+
+function renderEvidence(evidence) {
+  if (!evidence || evidence.length === 0) return;
+  STATE.evidenceData = evidence;
+
+  const services = [...new Set(evidence.map(e => e.service))].sort();
+  const regions  = [...new Set(evidence.map(e => e.region))].sort();
+
+  const svcSel = $('evServiceSel');
+  svcSel.innerHTML = '<option value="all">All services</option>' +
+    services.map(s => '<option value="'+escapeHtml(s)+'">'+escapeHtml(s)+'</option>').join('');
+
+  const regSel = $('evRegionSel');
+  regSel.innerHTML = '<option value="all">All regions</option>' +
+    regions.map(r => '<option value="'+escapeHtml(r)+'">'+escapeHtml(r)+'</option>').join('');
+
+  rebuildStatusPills();
+  restoreEvidenceURL();
+
+  svcSel.onchange = () => { STATE.evidenceFilters.service = svcSel.value; applyEvidenceFilters(); syncEvidenceURL(); };
+  regSel.onchange = () => { STATE.evidenceFilters.region  = regSel.value;  applyEvidenceFilters(); syncEvidenceURL(); };
+  $('evSearch').oninput = () => { STATE.evidenceFilters.search = $('evSearch').value; applyEvidenceFilters(); syncEvidenceURL(); };
+  $('evExpandAll').onclick   = () => document.querySelectorAll('.ev-card-item').forEach(el => el.classList.add('ev-open'));
+  $('evCollapseAll').onclick = () => document.querySelectorAll('.ev-card-item').forEach(el => el.classList.remove('ev-open'));
+  $('evCardViewBtn').onclick = () => { STATE.evidenceView = 'card';  $('evCardViewBtn').classList.add('active'); $('evTableViewBtn').classList.remove('active'); applyEvidenceFilters(); syncEvidenceURL(); };
+  $('evTableViewBtn').onclick = () => { STATE.evidenceView = 'table'; $('evTableViewBtn').classList.add('active'); $('evCardViewBtn').classList.remove('active'); applyEvidenceFilters(); syncEvidenceURL(); };
+}
+
+function rebuildStatusPills() {
+  const pills = $('evStatusPills');
+  pills.innerHTML = ['all','CRITICAL','HIGH','MEDIUM','LOW','INFO'].map(s =>
+    '<button class="ev-pill-btn' + (STATE.evidenceFilters.status === s ? ' active' : '') + '" data-status="'+s+'">' +
+    (s === 'all' ? 'All' : s) + '</button>'
+  ).join('');
+  pills.querySelectorAll('.ev-pill-btn').forEach(btn => {
+    btn.onclick = () => {
+      STATE.evidenceFilters.status = btn.dataset.status;
+      pills.querySelectorAll('.ev-pill-btn').forEach(b => b.classList.toggle('active', b === btn));
+      applyEvidenceFilters(); syncEvidenceURL();
+    };
+  });
+}
+
+function applyEvidenceFilters() {
+  const { service, region, status, search } = STATE.evidenceFilters;
+  const q = search.toLowerCase();
+  const filtered = (STATE.evidenceData || []).filter(e => {
+    if (service !== 'all' && e.service !== service) return false;
+    if (region  !== 'all' && e.region  !== region)  return false;
+    if (status  !== 'all' && e.severity !== status)  return false;
+    if (q && !e.api.toLowerCase().includes(q) && !e.id.toLowerCase().includes(q) && !(e.summary||'').toLowerCase().includes(q)) return false;
+    return true;
+  });
+
+  $('evCount').textContent = '(' + filtered.length + ')';
+  const list = $('evList');
+
+  if (STATE.evidenceView === 'table') {
+    list.innerHTML =
+      '<table class="ev-table"><thead><tr>' +
+      '<th>Service</th><th>API</th><th>Region</th><th>Severity</th><th>Summary</th>' +
+      '</tr></thead><tbody>' +
+      filtered.map(e =>
+        '<tr>' +
+        '<td><span class="ev-svc-tag">'+escapeHtml(e.service)+'</span></td>' +
+        '<td class="ev-api">'+escapeHtml(e.api)+'</td>' +
+        '<td style="color:var(--dim)">'+escapeHtml(e.region)+'</td>' +
+        '<td><span class="pill '+sevPillClass(e.severity||'low')+'">'+(e.severity||'INFO')+'</span></td>' +
+        '<td class="ev-sum">'+escapeHtml(e.summary||e.id)+'</td>' +
+        '</tr>'
+      ).join('') +
+      '</tbody></table>';
+  } else {
+    list.innerHTML = filtered.map(e =>
+      '<div class="ev-card-item" id="evc_'+escapeHtml(e.id)+'">' +
+      '<div class="ev-card-head" onclick="this.parentElement.classList.toggle(\'ev-open\')">' +
+      '<span class="ev-svc-tag">'+escapeHtml(e.service)+'</span>' +
+      '<span style="color:var(--accent-2);font-family:var(--mono)">'+escapeHtml(e.api)+'</span>' +
+      '<span style="color:var(--dim);font-size:11px;margin-left:4px">'+escapeHtml(e.region)+'</span>' +
+      '<span style="flex:1"></span>' +
+      '<span class="pill '+sevPillClass(e.severity||'low')+'">'+(e.severity||'INFO')+'</span>' +
+      '</div>' +
+      '<div class="ev-card-body">' +
+      (e.summary ? '<div style="color:var(--text);margin-bottom:6px">'+escapeHtml(e.summary)+'</div>' : '') +
+      (e.raw ? '<pre class="cli" style="max-height:140px;overflow:auto;margin-bottom:6px">'+escapeHtml(e.raw)+'</pre>' : '') +
+      '<div style="color:var(--dim);font-size:11px">ID: '+escapeHtml(e.id)+(e.rawBytes?' · '+e.rawBytes+'B':'')+(e.truncated?' · truncated':'')+'</div>' +
+      '</div>' +
+      '</div>'
+    ).join('');
+  }
+}
+
+function syncEvidenceURL() {
+  try {
+    const u = new URL(location.href);
+    u.searchParams.set('ev_svc', STATE.evidenceFilters.service);
+    u.searchParams.set('ev_reg', STATE.evidenceFilters.region);
+    u.searchParams.set('ev_st',  STATE.evidenceFilters.status);
+    u.searchParams.set('ev_view', STATE.evidenceView);
+    if (STATE.evidenceFilters.search) u.searchParams.set('ev_q', STATE.evidenceFilters.search);
+    else u.searchParams.delete('ev_q');
+    history.replaceState({}, '', u.toString());
+  } catch {}
+}
+
+function restoreEvidenceURL() {
+  try {
+    const u = new URL(location.href);
+    const svc  = u.searchParams.get('ev_svc');  if (svc)  { STATE.evidenceFilters.service = svc;  const s = $('evServiceSel'); if (s) s.value = svc; }
+    const reg  = u.searchParams.get('ev_reg');  if (reg)  { STATE.evidenceFilters.region  = reg;  const s = $('evRegionSel');  if (s) s.value = reg; }
+    const st   = u.searchParams.get('ev_st');   if (st)   { STATE.evidenceFilters.status  = st; }
+    const q    = u.searchParams.get('ev_q');    if (q)    { STATE.evidenceFilters.search  = q;   const s = $('evSearch'); if (s) s.value = q; }
+    const view = u.searchParams.get('ev_view'); if (view) { STATE.evidenceView = view; }
+    if (STATE.evidenceFilters.status !== 'all') rebuildStatusPills();
+    if (STATE.evidenceView === 'table') { $('evTableViewBtn')?.classList.add('active'); $('evCardViewBtn')?.classList.remove('active'); }
+    applyEvidenceFilters();
+  } catch {}
+}
 </script>
 </body>
 </html>

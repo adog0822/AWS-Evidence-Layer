@@ -33,7 +33,7 @@ import { gideonContextSuggestions, gideonFreeform } from './gideon';
 
 const CORS_HEADERS = {
   'access-control-allow-origin': '*',
-  'access-control-allow-methods': 'GET, POST, OPTIONS',
+  'access-control-allow-methods': 'GET, POST, DELETE, OPTIONS',
   'access-control-allow-headers': 'content-type, authorization',
 };
 
@@ -245,6 +245,7 @@ export default {
         if (m === 'POST' && action === 'gideon') return await handleGideon(req, env, scan, url);
         if (m === 'POST' && action === 'edit') return await handleEdit(req, env, scan, url);
         if (m === 'GET' && action === 'edits') return await handleEdits(env, scan, url);
+        if (m === 'DELETE' && action === 'edit') return await handleDeleteEdits(env, scan, url);
         // /analyze is now internal (post-purchase) only — return 410 Gone
         if (m === 'POST' && action === 'analyze') return err(410, 'AI analysis is triggered automatically after purchase.');
         if (m === 'POST' && action === 'regenerate') return await handleRegenerate(req, env, scan, url);
@@ -577,6 +578,14 @@ async function handleEdits(env: Env, scan: ScanRow, url: URL): Promise<Response>
   if (!(await checkToken(env, scan.id, url.searchParams.get('token')))) return err(403, 'invalid token');
   const rows = await env.DB.prepare('SELECT * FROM scan_edits WHERE scan_id = ? ORDER BY created_at DESC').bind(scan.id).all();
   return json({ edits: rows.results });
+}
+
+async function handleDeleteEdits(env: Env, scan: ScanRow, url: URL): Promise<Response> {
+  if (!(await checkToken(env, scan.id, url.searchParams.get('token')))) return err(403, 'invalid token');
+  await env.DB.prepare('DELETE FROM scan_edits WHERE scan_id = ?').bind(scan.id).run();
+  try { await env.BUCKET.delete(`reports/${scan.id}/report.html`); } catch {}
+  try { await env.BUCKET.delete(`reports/${scan.id}/package.json`); } catch {}
+  return json({ ok: true });
 }
 
 // ============================================================
