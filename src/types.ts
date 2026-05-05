@@ -1,8 +1,13 @@
 // Shared types for LoxeAI Pilot v2
 
+export type QueueMessage =
+  | { kind: 'analyze_control'; scanId: string; controlId: string; downloadToken: string; totalControls: number }
+  | { kind: 'assemble_report'; scanId: string; downloadToken: string };
+
 export interface Env {
   DB: D1Database;
   BUCKET: R2Bucket;
+  ANALYSIS_QUEUE: Queue<QueueMessage>;
   ANTHROPIC_API_KEY: string;
   STRIPE_SECRET_KEY: string;
   STRIPE_WEBHOOK_SECRET: string;

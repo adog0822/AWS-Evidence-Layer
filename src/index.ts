@@ -15,13 +15,13 @@
 //   6. POST /api/scan/:id/gideon?token= → context or free-form copilot
 //   7. POST /api/scan/:id/edit?token=   → save human-edit override
 
-import type { Env, AwsCredentials, ScanResults, ControlAnalysis } from './types';
+import type { Env, AwsCredentials, ScanResults, ControlAnalysis, QueueMessage } from './types';
 import { FRONTEND_HTML } from './html';
 import { CFN_TEMPLATE } from './cfn';
 import { demoScan } from './demo';
 import { runScan, SERVICE_CONFIG, DEFAULT_REGIONS } from './scanner';
 import { CONTROLS, getControl } from './controls';
-import { analyzeAllControls, rollupExecutive } from './analyzer';
+import { analyzeControl, rollupExecutive } from './analyzer';
 import { scoreControlsHeuristic, rollupHeuristic } from './scoring';
 import { assumeRoleWith } from './aws';
 import { createCheckoutSession, verifyStripeSignature } from './stripe';
@@ -223,6 +223,14 @@ export default {
         return json({ scan_id: purchase.scan_id, token: purchase.download_token });
       }
 
+      // Gideon conversation reset (nested path — must match before scanIdMatch)
+      const gideonResetMatch = p.match(/^\/api\/scan\/([a-zA-Z0-9_]+)\/gideon\/reset$/);
+      if (gideonResetMatch && m === 'POST') {
+        const scan = await getScan(env, gideonResetMatch[1]);
+        if (!scan) return err(404, 'scan not found');
+        return await handleGideonReset(env, scan, url);
+      }
+
       const scanIdMatch = p.match(/^\/api\/scan\/([a-zA-Z0-9_]+)\/(status|results|purchase|report|gideon|edit|edits|analyze|regenerate)$/);
       if (scanIdMatch) {
         const id = scanIdMatch[1];
@@ -239,13 +247,30 @@ export default {
         if (m === 'GET' && action === 'edits') return await handleEdits(env, scan, url);
         // /analyze is now internal (post-purchase) only — return 410 Gone
         if (m === 'POST' && action === 'analyze') return err(410, 'AI analysis is triggered automatically after purchase.');
-        if (m === 'POST' && action === 'regenerate') return await handleRegenerate(req, env, scan, ctx, url);
+        if (m === 'POST' && action === 'regenerate') return await handleRegenerate(req, env, scan, url);
       }
 
       return err(404, 'not found', { path: p });
     } catch (e: any) {
       console.error('worker error', e?.stack || e);
       return err(500, 'internal error', { message: e?.message || String(e) });
+    }
+  },
+
+  async queue(batch: MessageBatch<QueueMessage>, env: Env): Promise<void> {
+    for (const message of batch.messages) {
+      const msg = message.body;
+      try {
+        if (msg.kind === 'analyze_control') {
+          await handleAnalyzeControlMessage(env, msg);
+        } else if (msg.kind === 'assemble_report') {
+          await handleAssembleReportMessage(env, msg);
+        }
+        message.ack();
+      } catch (e: any) {
+        console.error('[queue] message failed, will retry', { kind: msg.kind, error: e?.message, stack: e?.stack });
+        message.retry();
+      }
     }
   },
 };
@@ -423,89 +448,47 @@ async function handleStripeWebhook(req: Request, env: Env, ctx: ExecutionContext
 }
 
 async function runPostPurchaseAnalysis(env: Env, scanId: string, downloadToken: string): Promise<void> {
-  console.log('[post-purchase] start', { scanId });
-  const t0 = Date.now();
-  try {
-    const scan = await getScan(env, scanId);
-    if (!scan) { console.error('[post-purchase] scan not found', { scanId }); return; }
-    const heuristic = await getResults(env, scanId);
-    if (!heuristic) { console.error('[post-purchase] heuristic results not found', { scanId }); return; }
-    console.log('[post-purchase] loaded heuristic', { scanId, evidence: heuristic.evidence?.length, controls: heuristic.controls?.length, ms: Date.now() - t0 });
+  console.log('[post-purchase] enqueuing queue-based analysis', { scanId });
+  const heuristic = await getResults(env, scanId);
+  if (!heuristic) { console.error('[post-purchase] no heuristic results to enqueue', { scanId }); return; }
 
-    console.log('[post-purchase] starting Claude analysis on all controls', { scanId });
-    const tAnalyze = Date.now();
-    const aiControls = await analyzeAllControls(env, heuristic.evidence);
-    console.log('[post-purchase] Claude analysis complete', { scanId, controls: aiControls.length, ms: Date.now() - tAnalyze });
+  const totalControls = CONTROLS.length;
 
-    const rollup = rollupExecutive(aiControls);
-    const deltaWithHistory = await computeDelta(env, scanId, scan.external_id, rollup.overall_gap_score);
-    const annotated = annotateControlsWithDelta(aiControls, deltaWithHistory);
+  // Reset/init progress row (clean slate for retries)
+  await env.DB.prepare(
+    `INSERT INTO scan_ai_progress (scan_id, total_controls, completed_controls, download_token)
+     VALUES (?, ?, 0, ?)
+     ON CONFLICT(scan_id) DO UPDATE SET
+       total_controls = excluded.total_controls,
+       completed_controls = 0,
+       download_token = excluded.download_token,
+       completed_at = NULL`
+  ).bind(scanId, totalControls, downloadToken).run();
 
-    const finalResults: ScanResults = {
-      controls: annotated,
-      evidence: heuristic.evidence,
-      ...rollup,
-    };
-    await saveResults(env, scanId, finalResults);
-    console.log('[post-purchase] saved AI results to D1', { scanId });
+  // Clear any previous partial control results to allow clean retry
+  await env.DB.prepare('DELETE FROM scan_ai_controls WHERE scan_id = ?').bind(scanId).run();
 
-    const editsRows = await env.DB.prepare('SELECT * FROM scan_edits WHERE scan_id = ?').bind(scanId).all();
-    const edits: ScanEdit[] = ((editsRows.results || []) as unknown) as ScanEdit[];
-
-    const { html: reportHtml, sha256 } = await buildReportHtml({
-      scanId,
-      orgName: scan.org_name,
-      scanCompletedAt: scan.completed_at || Date.now(),
-      results: finalResults,
-      delta: deltaWithHistory?.delta,
-      edits,
-    });
-    await env.BUCKET.put(`reports/${scanId}/report.html`, reportHtml, {
-      httpMetadata: { contentType: 'text/html; charset=utf-8' },
-      customMetadata: { sha256, downloadToken },
-    });
-    await env.BUCKET.put(
-      `reports/${scanId}/package.json`,
-      JSON.stringify({ scan_id: scanId, org_name: scan.org_name, sha256, generated_at: Date.now(), results: finalResults, delta: deltaWithHistory?.delta }, null, 2),
-      { httpMetadata: { contentType: 'application/json' } }
-    );
-    console.log('[post-purchase] DONE — wrote report.html + package.json to R2', { scanId, totalMs: Date.now() - t0 });
-  } catch (e: any) {
-    console.error('[post-purchase] FAILED', { scanId, totalMs: Date.now() - t0, error: e?.message || String(e), stack: e?.stack });
-    try {
-      const scan = await getScan(env, scanId);
-      if (!scan) return;
-      const heuristic = await getResults(env, scanId);
-      if (!heuristic) return;
-      const { html: reportHtml, sha256 } = await buildReportHtml({
-        scanId,
-        orgName: scan.org_name,
-        scanCompletedAt: scan.completed_at || Date.now(),
-        results: heuristic,
-      });
-      await env.BUCKET.put(`reports/${scanId}/report.html`, reportHtml, {
-        httpMetadata: { contentType: 'text/html; charset=utf-8' },
-        customMetadata: { sha256, fallback: 'true' },
-      });
-      console.log('[post-purchase] wrote FALLBACK heuristic report', { scanId });
-    } catch (fallbackErr: any) {
-      console.error('[post-purchase] FALLBACK ALSO FAILED', { scanId, error: fallbackErr?.message || String(fallbackErr) });
-    }
-  }
+  // Enqueue one message per control — each will be processed by the queue consumer
+  await env.ANALYSIS_QUEUE.sendBatch(
+    CONTROLS.map((c) => ({
+      body: { kind: 'analyze_control' as const, scanId, controlId: c.id, downloadToken, totalControls },
+    }))
+  );
+  console.log('[post-purchase] enqueued', { scanId, totalControls });
 }
 
 // ============================================================
 // POST /api/scan/:id/regenerate — manual trigger for stuck scans
 // ============================================================
 
-async function handleRegenerate(_req: Request, env: Env, scan: ScanRow, ctx: ExecutionContext, url: URL): Promise<Response> {
+async function handleRegenerate(_req: Request, env: Env, scan: ScanRow, url: URL): Promise<Response> {
   const token = url.searchParams.get('token');
   if (!(await checkToken(env, scan.id, token))) return err(403, 'invalid or missing token');
   const purchase = await getPurchaseByScan(env, scan.id);
   if (!purchase || purchase.status !== 'paid') return err(409, 'scan not paid');
   console.log('[regenerate] manually triggered', { scanId: scan.id });
-  ctx.waitUntil(runPostPurchaseAnalysis(env, scan.id, purchase.download_token || ''));
-  return json({ ok: true, message: 'Analysis re-triggered. Check status in 30-60 seconds.', scan_id: scan.id });
+  await runPostPurchaseAnalysis(env, scan.id, purchase.download_token || '');
+  return json({ ok: true, message: 'Analysis re-queued. Report ready in ~3-5 minutes.', scan_id: scan.id });
 }
 
 // ============================================================
@@ -566,7 +549,7 @@ async function handleGideon(req: Request, env: Env, scan: ScanRow, url: URL): Pr
     return json(gideonContextSuggestions(results, body.control_id));
   }
   if (!body.question) return err(400, 'question or control_id required');
-  const resp = await gideonFreeform(env, results, scan.org_name, body.question.slice(0, 800), body.control_id);
+  const resp = await gideonFreeform(env, results, scan.org_name, body.question.slice(0, 800), body.control_id, scan.id);
   return json(resp);
 }
 
@@ -596,5 +579,117 @@ async function handleEdits(env: Env, scan: ScanRow, url: URL): Promise<Response>
   return json({ edits: rows.results });
 }
 
-// Touch import to keep types/CONTROLS in scope for any future inline uses
-void getControl; void CONTROLS as unknown;
+// ============================================================
+// POST /api/scan/:id/gideon/reset — clear conversation history
+// ============================================================
+
+async function handleGideonReset(env: Env, scan: ScanRow, url: URL): Promise<Response> {
+  if (!(await checkToken(env, scan.id, url.searchParams.get('token')))) return err(403, 'invalid token');
+  await env.DB.prepare('DELETE FROM gideon_messages WHERE scan_id = ?').bind(scan.id).run();
+  console.log('[gideon:reset] cleared conversation', { scanId: scan.id });
+  return json({ ok: true, scan_id: scan.id });
+}
+
+// ============================================================
+// Queue consumer — analyze one control per invocation
+// ============================================================
+
+async function handleAnalyzeControlMessage(env: Env, msg: Extract<QueueMessage, { kind: 'analyze_control' }>): Promise<void> {
+  const { scanId, controlId, downloadToken, totalControls } = msg;
+  const t0 = Date.now();
+  console.log('[queue:analyze_control] start', { scanId, controlId });
+
+  // Idempotency: skip Claude call if result already stored
+  const existing = await env.DB.prepare('SELECT control_id FROM scan_ai_controls WHERE scan_id = ? AND control_id = ?')
+    .bind(scanId, controlId).first<{ control_id: string }>();
+  if (existing) {
+    console.log('[queue:analyze_control] already done, skipping', { scanId, controlId });
+    await maybeEnqueueAssemble(env, scanId, totalControls, downloadToken);
+    return;
+  }
+
+  const heuristic = await getResults(env, scanId);
+  if (!heuristic) {
+    console.error('[queue:analyze_control] no heuristic results', { scanId, controlId });
+    throw new Error('no heuristic results — will retry');
+  }
+
+  const result = await analyzeControl(env, controlId, heuristic.evidence);
+  console.log('[queue:analyze_control] Claude done', { scanId, controlId, status: result.status, ms: Date.now() - t0 });
+
+  await env.DB.prepare('INSERT OR REPLACE INTO scan_ai_controls (scan_id, control_id, result_json, analyzed_at) VALUES (?, ?, ?, ?)')
+    .bind(scanId, controlId, JSON.stringify(result), Date.now()).run();
+
+  await maybeEnqueueAssemble(env, scanId, totalControls, downloadToken);
+}
+
+async function maybeEnqueueAssemble(env: Env, scanId: string, totalControls: number, downloadToken: string): Promise<void> {
+  const row = await env.DB.prepare('SELECT COUNT(*) as cnt FROM scan_ai_controls WHERE scan_id = ?')
+    .bind(scanId).first<{ cnt: number }>();
+  const done = row?.cnt ?? 0;
+  console.log('[queue:analyze_control] progress', { scanId, done, totalControls });
+  if (done >= totalControls) {
+    console.log('[queue:analyze_control] all controls done, enqueueing assemble', { scanId });
+    await env.ANALYSIS_QUEUE.send({ kind: 'assemble_report', scanId, downloadToken });
+  }
+}
+
+// ============================================================
+// Queue consumer — assemble final report once all controls done
+// ============================================================
+
+async function handleAssembleReportMessage(env: Env, msg: Extract<QueueMessage, { kind: 'assemble_report' }>): Promise<void> {
+  const { scanId, downloadToken } = msg;
+  const t0 = Date.now();
+  console.log('[queue:assemble_report] start', { scanId });
+
+  const rows = await env.DB.prepare('SELECT control_id, result_json FROM scan_ai_controls WHERE scan_id = ?')
+    .bind(scanId).all<{ control_id: string; result_json: string }>();
+  if (!rows.results || rows.results.length === 0) {
+    console.error('[queue:assemble_report] no control results found', { scanId });
+    throw new Error('no control results — will retry');
+  }
+
+  const aiControls: ControlAnalysis[] = rows.results.map((r) => JSON.parse(r.result_json));
+  console.log('[queue:assemble_report] loaded controls', { scanId, count: aiControls.length });
+
+  const scan = await getScan(env, scanId);
+  if (!scan) { console.error('[queue:assemble_report] scan not found', { scanId }); throw new Error('scan not found'); }
+  const heuristic = await getResults(env, scanId);
+  if (!heuristic) { console.error('[queue:assemble_report] heuristic not found', { scanId }); throw new Error('heuristic not found'); }
+
+  const rollup = rollupExecutive(aiControls);
+  const deltaWithHistory = await computeDelta(env, scanId, scan.external_id, rollup.overall_gap_score);
+  const annotated = annotateControlsWithDelta(aiControls, deltaWithHistory);
+
+  const finalResults: ScanResults = { controls: annotated, evidence: heuristic.evidence, ...rollup };
+  await saveResults(env, scanId, finalResults);
+  console.log('[queue:assemble_report] saved AI results to D1', { scanId });
+
+  const editsRows = await env.DB.prepare('SELECT * FROM scan_edits WHERE scan_id = ?').bind(scanId).all();
+  const edits: ScanEdit[] = ((editsRows.results || []) as unknown) as ScanEdit[];
+
+  const { html: reportHtml, sha256 } = await buildReportHtml({
+    scanId,
+    orgName: scan.org_name,
+    scanCompletedAt: scan.completed_at || Date.now(),
+    results: finalResults,
+    delta: deltaWithHistory?.delta,
+    edits,
+  });
+  await env.BUCKET.put(`reports/${scanId}/report.html`, reportHtml, {
+    httpMetadata: { contentType: 'text/html; charset=utf-8' },
+    customMetadata: { sha256, downloadToken },
+  });
+  await env.BUCKET.put(
+    `reports/${scanId}/package.json`,
+    JSON.stringify({ scan_id: scanId, org_name: scan.org_name, sha256, generated_at: Date.now(), results: finalResults, delta: deltaWithHistory?.delta }, null, 2),
+    { httpMetadata: { contentType: 'application/json' } }
+  );
+  await env.DB.prepare('UPDATE scan_ai_progress SET completed_at = ?, completed_controls = total_controls WHERE scan_id = ?')
+    .bind(Date.now(), scanId).run();
+  console.log('[queue:assemble_report] DONE — wrote report.html + package.json to R2', { scanId, totalMs: Date.now() - t0 });
+}
+
+// Touch import to keep getControl in scope for any future inline uses
+void getControl;
