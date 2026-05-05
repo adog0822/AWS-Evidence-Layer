@@ -120,6 +120,11 @@ export async function analyzeControl(
       }),
     });
     console.log('[analyzer] HTTP response', { controlId, status: resp.status, ms: Date.now() - t0 });
+    if (resp.status === 429) {
+      const errorBody = await resp.text();
+      console.warn('[analyzer] rate limited, will retry', { controlId });
+      throw new Error('CLAUDE_RATE_LIMIT_RETRY: ' + errorBody.slice(0, 200));
+    }
     if (!resp.ok) {
       const errorBody = await resp.text();
       console.error('[analyzer] API error body', { controlId, status: resp.status, body: errorBody.slice(0, 500) });
@@ -133,6 +138,7 @@ export async function analyzeControl(
       console.error('[analyzer] JSON parse failed', { controlId, rawTextPrefix: rawText.slice(0, 500) });
     }
   } catch (e: any) {
+    if (String(e?.message).startsWith('CLAUDE_RATE_LIMIT_RETRY')) throw e; // let queue retry
     console.error('[analyzer] FAILED', { controlId, error: e?.message || String(e) });
     return {
       control_id: def.id,
