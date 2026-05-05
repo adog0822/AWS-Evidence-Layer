@@ -1034,7 +1034,7 @@ function applyEvidenceFilters() {
   } else {
     list.innerHTML = filtered.map(e =>
       '<div class="ev-card-item" id="evc_'+escapeHtml(e.id)+'">' +
-      '<div class="ev-card-head" onclick="this.parentElement.classList.toggle(\'ev-open\')">' +
+      '<div class="ev-card-head" onclick="this.parentElement.classList.toggle(&#39;ev-open&#39;)">' +
       '<span class="ev-svc-tag">'+escapeHtml(e.service)+'</span>' +
       '<span style="color:var(--accent-2);font-family:var(--mono)">'+escapeHtml(e.api)+'</span>' +
       '<span style="color:var(--dim);font-size:11px;margin-left:4px">'+escapeHtml(e.region)+'</span>' +
