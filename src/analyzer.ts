@@ -5,7 +5,7 @@
 import type { ControlAnalysis, EvidenceItem, Env, Finding } from './types';
 import { CONTROLS, getControl, evidenceForControl, ControlDef } from './controls';
 
-const CLAUDE_MODEL = 'claude-sonnet-4-6';
+const CLAUDE_MODEL = 'claude-sonnet-4-5';
 const CLAUDE_API_URL = 'https://api.anthropic.com/v1/messages';
 
 // ============================================================
@@ -92,9 +92,19 @@ export async function analyzeControl(
   const relevant = evidenceForControl(controlId, evidence);
   const { system, user } = buildPrompt(def, relevant);
 
+  console.log('[analyzer] start', {
+    controlId,
+    model: CLAUDE_MODEL,
+    apiUrl: CLAUDE_API_URL,
+    apiKeyPrefix: (env.ANTHROPIC_API_KEY || '').slice(0, 8),
+    systemPromptPrefix: system.slice(0, 200),
+    evidenceCount: relevant.length,
+  });
+
   let parsed: any = null;
   let rawText = '';
   try {
+    const t0 = Date.now();
     const resp = await fetch(CLAUDE_API_URL, {
       method: 'POST',
       headers: {
@@ -104,19 +114,26 @@ export async function analyzeControl(
       },
       body: JSON.stringify({
         model: CLAUDE_MODEL,
-        max_tokens: 2000,
+        max_tokens: 4000,
         system,
         messages: [{ role: 'user', content: user }],
       }),
     });
+    console.log('[analyzer] HTTP response', { controlId, status: resp.status, ms: Date.now() - t0 });
     if (!resp.ok) {
-      const text = await resp.text();
-      throw new Error(`Claude API ${resp.status}: ${text.slice(0, 400)}`);
+      const errorBody = await resp.text();
+      console.error('[analyzer] API error body', { controlId, status: resp.status, body: errorBody.slice(0, 500) });
+      throw new Error(`Claude API ${resp.status}: ${errorBody.slice(0, 400)}`);
     }
     const data: any = await resp.json();
     rawText = data.content?.[0]?.text || '';
+    console.log('[analyzer] response received', { controlId, rawLen: rawText.length, stopReason: data.stop_reason });
     parsed = extractJson(rawText);
+    if (!parsed) {
+      console.error('[analyzer] JSON parse failed', { controlId, rawTextPrefix: rawText.slice(0, 500) });
+    }
   } catch (e: any) {
+    console.error('[analyzer] FAILED', { controlId, error: e?.message || String(e) });
     return {
       control_id: def.id,
       name: def.name,
@@ -170,17 +187,43 @@ export async function analyzeControl(
 }
 
 function extractJson(text: string): any {
-  // Sonnet returns plain JSON per system prompt, but tolerate fences/preamble
-  const fenced = text.match(/```json\s*([\s\S]*?)```/);
+  // 1. Fenced code block
+  const fenced = text.match(/```(?:json)?\s*([\s\S]*?)```/);
   if (fenced) {
-    try { return JSON.parse(fenced[1]); } catch {}
+    try { return JSON.parse(fenced[1].trim()); } catch {}
   }
+
+  // 2. Outermost first-brace to last-brace (fast path for clean responses)
   const firstBrace = text.indexOf('{');
   const lastBrace = text.lastIndexOf('}');
   if (firstBrace >= 0 && lastBrace > firstBrace) {
     try { return JSON.parse(text.slice(firstBrace, lastBrace + 1)); } catch {}
   }
-  return null;
+
+  // 3. Largest balanced-brace JSON object (handles prose wrapping truncated output)
+  let best: any = null;
+  let bestLen = 0;
+  let depth = 0;
+  let start = -1;
+  for (let i = 0; i < text.length; i++) {
+    if (text[i] === '{') {
+      if (depth === 0) start = i;
+      depth++;
+    } else if (text[i] === '}') {
+      depth--;
+      if (depth === 0 && start >= 0) {
+        const candidate = text.slice(start, i + 1);
+        if (candidate.length > bestLen) {
+          try {
+            best = JSON.parse(candidate);
+            bestLen = candidate.length;
+          } catch {}
+        }
+        start = -1;
+      }
+    }
+  }
+  return best;
 }
 
 function toInt(v: any, fallback: number): number {
