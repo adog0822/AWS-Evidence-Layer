@@ -90,11 +90,35 @@ function sevRank(s?: string): number {
 function truncate(s: string, n: number): string { return s.length <= n ? s : s.slice(0, n - 1) + '…'; }
 
 // ============================================================
-// Free-form mode — Claude Sonnet
+// Free-form mode — Claude Sonnet with conversation history
 // ============================================================
 
-export async function gideonFreeform(env: Env, results: ScanResults, scanOrgName: string, q: string, controlId?: string): Promise<GideonResponse> {
+export async function gideonFreeform(env: Env, results: ScanResults, scanOrgName: string, q: string, controlId?: string, scanId?: string): Promise<GideonResponse> {
   const ctx = buildScanContext(results, scanOrgName, controlId);
+
+  // Load last 20 messages for this scan to maintain conversation context
+  const history: { role: 'user' | 'assistant'; content: string }[] = [];
+  if (scanId) {
+    const rows = await env.DB.prepare(
+      'SELECT role, content FROM gideon_messages WHERE scan_id = ? ORDER BY created_at ASC LIMIT 20'
+    ).bind(scanId).all<{ role: string; content: string }>();
+    for (const r of rows.results || []) {
+      if (r.role === 'user' || r.role === 'assistant') {
+        history.push({ role: r.role, content: r.content });
+      }
+    }
+  }
+
+  // Build messages array: history + new user question (context injected into first user turn)
+  const userContent = history.length === 0
+    ? `Scan context:\n${ctx}\n\nQuestion: ${q}`
+    : q;
+
+  const messages = [
+    ...history,
+    { role: 'user' as const, content: userContent },
+  ];
+
   try {
     const resp = await fetch(CLAUDE_API_URL, {
       method: 'POST',
@@ -106,13 +130,25 @@ export async function gideonFreeform(env: Env, results: ScanResults, scanOrgName
       body: JSON.stringify({
         model: CLAUDE_MODEL,
         max_tokens: 400,
-        system: GIDEON_SYSTEM,
-        messages: [{ role: 'user', content: `Scan context:\n${ctx}\n\nQuestion: ${q}` }],
+        system: GIDEON_SYSTEM + (history.length > 0 ? `\n\nScan context:\n${ctx}` : ''),
+        messages,
       }),
     });
     if (!resp.ok) throw new Error(`Claude API ${resp.status}: ${(await resp.text()).slice(0, 200)}`);
     const data: any = await resp.json();
     const answer = (data.content?.[0]?.text || '').toString().trim();
+
+    // Persist both turns to gideon_messages
+    if (scanId) {
+      const now = Date.now();
+      const msgId1 = crypto.randomUUID().replace(/-/g, '');
+      const msgId2 = crypto.randomUUID().replace(/-/g, '');
+      await env.DB.prepare('INSERT INTO gideon_messages (id, scan_id, role, content, created_at) VALUES (?, ?, ?, ?, ?)')
+        .bind(msgId1, scanId, 'user', userContent, now).run();
+      await env.DB.prepare('INSERT INTO gideon_messages (id, scan_id, role, content, created_at) VALUES (?, ?, ?, ?, ?)')
+        .bind(msgId2, scanId, 'assistant', answer, now + 1).run();
+    }
+
     return { mode: 'freeform', answer };
   } catch (e: any) {
     return { mode: 'freeform', answer: `(Gideon is temporarily unavailable: ${e?.message || e})` };
