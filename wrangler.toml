@@ -1,0 +1,39 @@
+name = "loxeai-pilot"
+main = "src/index.ts"
+compatibility_date = "2024-09-23"
+compatibility_flags = ["nodejs_compat"]
+account_id = "4c84ffd3c83bc998d24306ea73ad8f61"
+
+# D1 Database (replace database_id after running `wrangler d1 create loxeai-pilot-db`)
+[[d1_databases]]
+binding = "DB"
+database_name = "loxeai-pilot-db"
+database_id = "ba2de02f-897e-4082-a764-d86891a5a90a"
+migrations_dir = "migrations"
+
+# R2 Bucket — binding name must match Env.BUCKET in types.ts
+[[r2_buckets]]
+binding = "BUCKET"
+bucket_name = "loxeai-pilot-reports"
+
+# Custom domain route
+[[routes]]
+pattern = "pilot.loxeai.com/*"
+zone_name = "loxeai.com"
+
+[vars]
+ENVIRONMENT = "production"
+PRICE_CENTS = "2999"
+DAILY_SCAN_LIMIT = "10"
+
+# Secrets (set via `wrangler secret put`):
+#   ANTHROPIC_API_KEY
+#   STRIPE_SECRET_KEY
+#   STRIPE_WEBHOOK_SECRET
+#   STRIPE_PRICE_ID           (optional, otherwise DEFAULT_PRICE_ID from stripe.ts is used)
+#   LOXEAI_AWS_ACCESS_KEY_ID  (LoxeAI scanner principal credentials)
+#   LOXEAI_AWS_SECRET_ACCESS_KEY
+#   LOXEAI_AWS_SESSION_TOKEN  (optional, for temporary credentials)
+
+[observability]
+enabled = true
