@@ -223,7 +223,7 @@ export default {
         return json({ scan_id: purchase.scan_id, token: purchase.download_token });
       }
 
-      const scanIdMatch = p.match(/^\/api\/scan\/([a-zA-Z0-9_]+)\/(status|results|purchase|report|gideon|edit|edits|analyze)$/);
+      const scanIdMatch = p.match(/^\/api\/scan\/([a-zA-Z0-9_]+)\/(status|results|purchase|report|gideon|edit|edits|analyze|regenerate)$/);
       if (scanIdMatch) {
         const id = scanIdMatch[1];
         const action = scanIdMatch[2];
@@ -239,6 +239,7 @@ export default {
         if (m === 'GET' && action === 'edits') return await handleEdits(env, scan, url);
         // /analyze is now internal (post-purchase) only — return 410 Gone
         if (m === 'POST' && action === 'analyze') return err(410, 'AI analysis is triggered automatically after purchase.');
+        if (m === 'POST' && action === 'regenerate') return await handleRegenerate(req, env, scan, ctx, url);
       }
 
       return err(404, 'not found', { path: p });
@@ -390,20 +391,31 @@ async function handleStripeWebhook(req: Request, env: Env, ctx: ExecutionContext
     const scanId = session.client_reference_id || session.metadata?.scan_id;
     const sessionId = session.id;
     const paymentIntent = session.payment_intent;
+    console.log('[webhook] checkout.session.completed', { scanId, sessionId });
     if (scanId && sessionId) {
-      // Idempotency: skip if this session is already paid (Stripe re-delivers webhooks).
       const existing = await env.DB.prepare(
         'SELECT status, download_token FROM report_purchases WHERE stripe_session_id = ? LIMIT 1'
       ).bind(sessionId).first<{ status: string; download_token: string | null }>();
+
+      // Smarter idempotency: only short-circuit if paid AND report already exists in R2
       if (existing?.status === 'paid') {
-        return json({ received: true, duplicate: true });
+        const reportExists = await env.BUCKET.head(`reports/${scanId}/report.html`);
+        if (reportExists) {
+          console.log('[webhook] already paid + report exists, skipping', { scanId });
+          return json({ received: true, duplicate: true, report_ready: true });
+        }
+        console.log('[webhook] paid but no report in R2, retrying analysis', { scanId });
+        ctx.waitUntil(runPostPurchaseAnalysis(env, scanId, existing.download_token || newDownloadToken()));
+        return json({ received: true, retrying: true });
       }
+
+      // First-time payment
       const downloadToken = newDownloadToken();
       await env.DB.prepare(
         `UPDATE report_purchases SET status = ?, paid_at = ?, stripe_payment_intent = ?, download_token = ?
          WHERE stripe_session_id = ?`
       ).bind('paid', Date.now(), paymentIntent || null, downloadToken, sessionId).run();
-      // Kick Claude analysis + R2 pre-gen in background
+      console.log('[webhook] marked paid, kicking analysis', { scanId });
       ctx.waitUntil(runPostPurchaseAnalysis(env, scanId, downloadToken));
     }
   }
@@ -411,17 +423,21 @@ async function handleStripeWebhook(req: Request, env: Env, ctx: ExecutionContext
 }
 
 async function runPostPurchaseAnalysis(env: Env, scanId: string, downloadToken: string): Promise<void> {
+  console.log('[post-purchase] start', { scanId });
+  const t0 = Date.now();
   try {
     const scan = await getScan(env, scanId);
-    if (!scan) return;
+    if (!scan) { console.error('[post-purchase] scan not found', { scanId }); return; }
     const heuristic = await getResults(env, scanId);
-    if (!heuristic) return;
+    if (!heuristic) { console.error('[post-purchase] heuristic results not found', { scanId }); return; }
+    console.log('[post-purchase] loaded heuristic', { scanId, evidence: heuristic.evidence?.length, controls: heuristic.controls?.length, ms: Date.now() - t0 });
 
-    // Run Claude analysis across all 12 controls
+    console.log('[post-purchase] starting Claude analysis on all controls', { scanId });
+    const tAnalyze = Date.now();
     const aiControls = await analyzeAllControls(env, heuristic.evidence);
-    const rollup = rollupExecutive(aiControls);
+    console.log('[post-purchase] Claude analysis complete', { scanId, controls: aiControls.length, ms: Date.now() - tAnalyze });
 
-    // Compute scan delta vs previous completed scan for this external_id
+    const rollup = rollupExecutive(aiControls);
     const deltaWithHistory = await computeDelta(env, scanId, scan.external_id, rollup.overall_gap_score);
     const annotated = annotateControlsWithDelta(aiControls, deltaWithHistory);
 
@@ -431,12 +447,11 @@ async function runPostPurchaseAnalysis(env: Env, scanId: string, downloadToken: 
       ...rollup,
     };
     await saveResults(env, scanId, finalResults);
+    console.log('[post-purchase] saved AI results to D1', { scanId });
 
-    // Apply edits if any saved before purchase (rare — edits are post-paywall)
     const editsRows = await env.DB.prepare('SELECT * FROM scan_edits WHERE scan_id = ?').bind(scanId).all();
     const edits: ScanEdit[] = ((editsRows.results || []) as unknown) as ScanEdit[];
 
-    // Pre-generate report HTML + JSON in R2
     const { html: reportHtml, sha256 } = await buildReportHtml({
       scanId,
       orgName: scan.org_name,
@@ -454,9 +469,9 @@ async function runPostPurchaseAnalysis(env: Env, scanId: string, downloadToken: 
       JSON.stringify({ scan_id: scanId, org_name: scan.org_name, sha256, generated_at: Date.now(), results: finalResults, delta: deltaWithHistory?.delta }, null, 2),
       { httpMetadata: { contentType: 'application/json' } }
     );
+    console.log('[post-purchase] DONE — wrote report.html + package.json to R2', { scanId, totalMs: Date.now() - t0 });
   } catch (e: any) {
-    console.error('post-purchase analysis failed', e?.stack || e);
-    // Fall back: paid users still get the heuristic results — but we surface the error in the report download
+    console.error('[post-purchase] FAILED', { scanId, totalMs: Date.now() - t0, error: e?.message || String(e), stack: e?.stack });
     try {
       const scan = await getScan(env, scanId);
       if (!scan) return;
@@ -472,8 +487,25 @@ async function runPostPurchaseAnalysis(env: Env, scanId: string, downloadToken: 
         httpMetadata: { contentType: 'text/html; charset=utf-8' },
         customMetadata: { sha256, fallback: 'true' },
       });
-    } catch {}
+      console.log('[post-purchase] wrote FALLBACK heuristic report', { scanId });
+    } catch (fallbackErr: any) {
+      console.error('[post-purchase] FALLBACK ALSO FAILED', { scanId, error: fallbackErr?.message || String(fallbackErr) });
+    }
   }
+}
+
+// ============================================================
+// POST /api/scan/:id/regenerate — manual trigger for stuck scans
+// ============================================================
+
+async function handleRegenerate(_req: Request, env: Env, scan: ScanRow, ctx: ExecutionContext, url: URL): Promise<Response> {
+  const token = url.searchParams.get('token');
+  if (!(await checkToken(env, scan.id, token))) return err(403, 'invalid or missing token');
+  const purchase = await getPurchaseByScan(env, scan.id);
+  if (!purchase || purchase.status !== 'paid') return err(409, 'scan not paid');
+  console.log('[regenerate] manually triggered', { scanId: scan.id });
+  ctx.waitUntil(runPostPurchaseAnalysis(env, scan.id, purchase.download_token || ''));
+  return json({ ok: true, message: 'Analysis re-triggered. Check status in 30-60 seconds.', scan_id: scan.id });
 }
 
 // ============================================================
