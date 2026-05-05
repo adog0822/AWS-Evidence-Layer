@@ -1,0 +1,26 @@
+{
+  "name": "loxeai-pilot",
+  "version": "2.0.0",
+  "description": "LoxeAI Evidence Tracer v2 — SOC 2 audit readiness platform on Cloudflare Workers",
+  "private": true,
+  "scripts": {
+    "dev": "wrangler dev",
+    "deploy": "wrangler deploy",
+    "db:create": "wrangler d1 create loxeai-pilot-db",
+    "db:migrate:local": "wrangler d1 migrations apply loxeai-pilot-db --local",
+    "db:migrate": "wrangler d1 migrations apply loxeai-pilot-db --remote",
+    "r2:create": "wrangler r2 bucket create loxeai-pilot-reports",
+    "tail": "wrangler tail",
+    "typecheck": "tsc --noEmit"
+  },
+  "devDependencies": {
+    "@cloudflare/vitest-pool-workers": "^0.15.2",
+    "@cloudflare/workers-types": "^4.20240909.0",
+    "typescript": "^5.5.4",
+    "vitest": "^4.1.5",
+    "wrangler": "^4.87.0"
+  },
+  "dependencies": {
+    "motion": "^12.38.0"
+  }
+}
