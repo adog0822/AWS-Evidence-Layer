@@ -913,7 +913,7 @@ $('gideonOpen').addEventListener('click', () => {
   $('gideon').classList.remove('hidden');
   $('gideonOpen').classList.add('hidden');
   if (STATE.openControl) loadGideonContext(STATE.openControl);
-  else { $('gideonBody').innerHTML = "<div class=\"msg bot\">Howdy, I'm Gideon. Open a control to get auto-generated remediation suggestions, or ask me anything about your scan.</div>"; }
+  else { $('gideonBody').innerHTML = '<div class="msg bot">Howdy, I&apos;m Gideon. Open a control to get auto-generated remediation suggestions, or ask me anything about your scan.</div>'; }
 });
 $('gideonClose').addEventListener('click', () => {
   $('gideon').classList.add('hidden');
