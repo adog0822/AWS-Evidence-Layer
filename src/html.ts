@@ -261,45 +261,107 @@ footer.foot { color: var(--muted); font-size: 12px; padding: 32px 28px; text-ali
 <body>
 
 <header class="nav">
-  <div class="brand"><span class="dot"></span> LoxeAI <span class="sub">/ Evidence Tracer · v2</span></div>
-  <div class="meter"><span class="dotsmall"></span><span id="meterText">— scans today</span></div>
+  <div class="brand"><span class="dot"></span> LoxeAI</div>
+  <nav class="m-nav-links">
+    <a href="/methodology">Methodology</a>
+    <a href="/privacy">Privacy</a>
+    <a href="mailto:arjav@loxeai.com" class="m-nav-cta">Book a call</a>
+  </nav>
+  <span class="m-nav-meter" id="meterText"></span>
 </header>
 
 <main class="container">
-
-  <!-- HOME / HERO -->
-  <section id="hero" style="padding: 72px 0 30px;">
-    <span class="eyebrow">SOC 2 Type I · AWS-native</span>
-    <h1>Audit-grade SOC 2 readiness, <em>delivered in minutes.</em></h1>
-    <p class="lede">Connect a read-only AWS role. We collect evidence across 15 services and 6 regions, run rule-based gap scoring instantly, and unlock full Claude Sonnet 4.6 analysis the moment you purchase. <strong style="color:var(--text)">$29.99 per report.</strong> No SaaS contract. No agent. No Slack-bot-of-the-month.</p>
-    <div style="display:flex; gap: 10px; flex-wrap: wrap;">
-      <button class="btn primary" onclick="document.getElementById('connect').scrollIntoView({behavior:'smooth'})">Run a scan →</button>
-      <button class="btn" id="demoBtn">View demo report (AcmePay)</button>
+<!-- HERO -->
+  <section class="m-hero">
+    <div class="m-wrap">
+      <h1 class="m-h1">Compliance, but you can<br>actually check our work.</h1>
+      <p class="m-sub">Most SOC 2 tools sell you a dashboard. We give your auditor the receipts. Every finding traces to an exact AWS API call, hashed and reproducible.</p>
+      <div class="m-cta-row">
+        <a class="btn primary m-cta-primary" href="#scan">Run a free scan →</a>
+        <a class="btn m-cta-secondary" href="/methodology">How it works</a>
+        <button class="btn m-cta-ghost" id="demoBtn">View demo (AcmePay)</button>
+      </div>
+      <div class="m-trust">Cloudflare-edge · 30-day retention · Read-only IAM</div>
     </div>
   </section>
 
-  <!-- HOW IT WORKS -->
-  <section id="how">
-    <h2>Pipeline</h2>
-    <div class="grid grid-3">
-      <div class="card">
-        <h3><span class="kbd">01</span> &nbsp; Read-only role</h3>
-        <p style="color:var(--muted)">Deploy our CFN template. ExternalId-bound, scoped to <code>SecurityAudit</code> + <code>ReadOnlyAccess</code>, with explicit Deny on secret material. Delete the role any time.</p>
-      </div>
-      <div class="card">
-        <h3><span class="kbd">02</span> &nbsp; Evidence collection</h3>
-        <p style="color:var(--muted)">15 services × 6 regions, parallelized at 12 concurrent calls. Severity-aware truncation — we never drop CRITICAL findings.</p>
-      </div>
-      <div class="card">
-        <h3><span class="kbd">03</span> &nbsp; AI analysis</h3>
-        <p style="color:var(--muted)">12 SOC 2 controls evaluated by Claude Sonnet 4.6, individually. Each control gets a status, gap score, audit risk, remediation CLI, and auditor questions.</p>
+  <!-- DIFFERENTIATORS -->
+  <section class="m-cards-section">
+    <div class="m-wrap">
+      <div class="m-eyebrow-label">What&apos;s different</div>
+      <div class="m-cards">
+        <div class="m-card">
+          <div class="m-card-label">01 / VERIFIABLE</div>
+          <h3 class="m-card-title">Open source the scan, hash the evidence.</h3>
+          <p class="m-card-body">Every finding includes the AWS API endpoint, timestamp, and SHA-256 hash of the raw response. Your auditor can re-run the call themselves.</p>
+        </div>
+        <div class="m-card">
+          <div class="m-card-label">02 / HONEST</div>
+          <h3 class="m-card-title">We don&apos;t trade in vapor.</h3>
+          <p class="m-card-body">No &apos;AI trained on millions of audits.&apos; No &apos;zero-persistence&apos; that isn&apos;t. We ship the architecture and tell you what it covers — and what it doesn&apos;t.</p>
+        </div>
+        <div class="m-card">
+          <div class="m-card-label">03 / FAST</div>
+          <h3 class="m-card-title">30 minutes, not 30 days.</h3>
+          <p class="m-card-body">Provision a read-only role, paste the ARN, get a free gap report. Pay $29.99 if you want the auditor-grade version.</p>
+        </div>
       </div>
     </div>
   </section>
 
-  <!-- CONNECT -->
+  <!-- PRICING -->
+  <section class="m-pricing-section">
+    <div class="m-wrap">
+      <div class="m-pricing">
+        <div class="m-price-card">
+          <div class="m-price-tier">Free</div>
+          <div class="m-price-amount">$0</div>
+          <div class="m-price-tag">Free scan, free gap report</div>
+          <ul class="m-price-list">
+            <li>Gap score &amp; freshness</li>
+            <li>Evidence count</li>
+            <li>Top findings (locked)</li>
+            <li>No credit card</li>
+          </ul>
+          <a class="btn m-price-cta" href="#scan">Run free scan →</a>
+        </div>
+        <div class="m-price-card m-price-featured">
+          <div class="m-price-tier">Most popular</div>
+          <div class="m-price-amount">$29.99</div>
+          <div class="m-price-tag">Audit-grade report</div>
+          <ul class="m-price-list">
+            <li>Full AI analysis (Sonnet 4.6)</li>
+            <li>Traceable evidence</li>
+            <li>Remediation CLI commands</li>
+            <li>Gideon compliance copilot</li>
+            <li>Scan history &amp; deltas</li>
+            <li>Edit &amp; resolve findings</li>
+          </ul>
+          <a class="btn primary m-price-cta" href="#scan">Get audit-grade →</a>
+        </div>
+        <div class="m-price-card">
+          <div class="m-price-tier">Custom</div>
+          <div class="m-price-amount">Pilot</div>
+          <div class="m-price-tag">Custom engagement</div>
+          <ul class="m-price-list">
+            <li>Methodology consultation</li>
+            <li>Multi-account scope</li>
+            <li>Auditor handoff support</li>
+            <li>Founder-direct access</li>
+          </ul>
+          <a class="btn m-price-cta" href="mailto:arjav@loxeai.com">Book a call →</a>
+        </div>
+      </div>
+    </div>
+  </section>
+  
+  <!-- CONNECT / SCAN FORM -->
+  <div id="scan" style="scroll-margin-top:80px;"></div>
   <section id="connect">
-    <h2>Connect AWS</h2>
+    <div class="m-form-header container">
+      <h2 class="m-form-title">Run your free scan</h2>
+      <p class="m-form-sub">Provision a read-only IAM role. Paste the ARN. Get a gap report in under 30 seconds.</p>
+    </div>
     <div class="grid grid-2">
       <div class="card">
         <h3>1. Generate an ExternalId</h3>
@@ -462,7 +524,15 @@ footer.foot { color: var(--muted); font-size: 12px; padding: 32px 28px; text-ali
 </main>
 
 <footer class="foot">
-  © LoxeAI · Pilot v2 · pilot.loxeai.com — read-only · ExternalId-bound · Sonnet 4.6 reasoning layer
+  <div class="m-footer-inner">
+    <span class="m-footer-copy">© 2026 LoxeAI · Boston, MA</span>
+    <div class="m-footer-links">
+      <a href="/methodology">Methodology</a>
+      <a href="/privacy">Privacy</a>
+      <a href="/cookies">Cookies</a>
+      <a href="mailto:arjav@loxeai.com">Talk to founder</a>
+    </div>
+  </div>
 </footer>
 
 <button class="gideon-btn hidden" id="gideonOpen">⌬ Ask Gideon</button>
@@ -480,6 +550,12 @@ footer.foot { color: var(--muted); font-size: 12px; padding: 32px 28px; text-ali
 </div>
 
 <div id="toast" class="toast hidden"></div>
+
+<div id="cookieBanner" class="cookie-banner">
+  <p class="cookie-text">We use only essential session cookies. No analytics. No trackers.</p>
+  <a href="/cookies" class="cookie-more">Read more</a>
+  <button class="cookie-ack" id="cookieAck">Got it</button>
+</div>
 
 <script>
 const $ = (id) => document.getElementById(id);
@@ -1019,8 +1095,21 @@ async function sendGideon() {
   body.scrollTop = body.scrollHeight;
   STATE.gideonMsgCount++;
 }
-$('gideonSend').addEventListener('click', sendGideon);
+ $('gideonSend').addEventListener('click', sendGideon);
 $('gideonInput').addEventListener('keydown', (e) => { if (e.key === 'Enter') sendGideon(); });
+
+// ---------- Cookie banner ----------
+(function() {
+  if (document.cookie.indexOf('lxa_ck=1') !== -1) return;
+  const b = $('cookieBanner'); if (!b) return;
+  setTimeout(() => b.classList.add('show'), 1200);
+  const ack = $('cookieAck');
+  if (ack) ack.addEventListener('click', () => {
+    document.cookie = 'lxa_ck=1; path=/; max-age=' + (365*24*60*60) + '; samesite=lax';
+    b.classList.remove('show');
+    setTimeout(() => b.style.display = 'none', 350);
+  });
+})();
 
 // ---------- Evidence catalog ----------
 
