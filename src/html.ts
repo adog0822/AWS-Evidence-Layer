@@ -169,7 +169,7 @@ pre { background: #0a0e13; padding: 12px; border-radius: 8px; border: 1px solid 
 
 /* ===== PRICING ===== */
 .m-pricing-section { padding:80px 0; border-top:1px solid var(--border); }
-.m-pricing { display:grid; grid-template-columns:repeat(3,1fr); gap:20px; align-items:start; }
+.m-pricing { display:grid; grid-template-columns:repeat(2,1fr); gap:20px; align-items:start; max-width:800px; }
 @media (max-width:820px) { .m-pricing { grid-template-columns:1fr; } }
 .m-price-card { padding:28px; border:1px solid var(--border); border-radius:8px; display:flex; flex-direction:column; }
 .m-price-featured { border-color:var(--accent); background:rgba(191,255,90,0.02); transform:scale(1.02); }
@@ -330,7 +330,7 @@ footer.foot { color: var(--muted); font-size: 12px; padding: 32px 28px; text-ali
           <div class="m-price-amount">$29.99</div>
           <div class="m-price-tag">Audit-grade report</div>
           <ul class="m-price-list">
-            <li>Full AI analysis (Sonnet 4.6)</li>
+            <li>Deep analysis across 12 SOC 2 controls</li>
             <li>Traceable evidence</li>
             <li>Remediation CLI commands</li>
             <li>Gideon compliance copilot</li>
@@ -339,20 +339,7 @@ footer.foot { color: var(--muted); font-size: 12px; padding: 32px 28px; text-ali
           </ul>
           <a class="btn primary m-price-cta" href="#scan">Get audit-grade →</a>
         </div>
-        <div class="m-price-card">
-          <div class="m-price-tier">Custom</div>
-          <div class="m-price-amount">Pilot</div>
-          <div class="m-price-tag">Custom engagement</div>
-          <ul class="m-price-list">
-            <li>Methodology consultation</li>
-            <li>Multi-account scope</li>
-            <li>Auditor handoff support</li>
-            <li>Founder-direct access</li>
-          </ul>
-          <a class="btn m-price-cta" href="mailto:arjav@loxeai.com">Book a call →</a>
-        </div>
-      </div>
-    </div>
+       
   </section>
   
   <!-- CONNECT / SCAN FORM -->
@@ -426,7 +413,7 @@ footer.foot { color: var(--muted); font-size: 12px; padding: 32px 28px; text-ali
     <!-- Generating banner (paid but Claude not done yet) -->
     <div id="generatingBanner" class="generating-banner hidden">
       <span class="spin"></span>
-      <span>Your AI-graded report is being generated. This usually takes 1–2 minutes.</span>
+      <span>Your report is being generated. This usually takes 10–15 minutes.</span>
       <button class="btn sm" onclick="location.reload()" style="margin-left:auto;flex-shrink:0">Refresh</button>
     </div>
 
@@ -924,7 +911,8 @@ $('buyBtn').onclick = async () => {
 
 async function pollUntilReady() {
   $('generatingBanner').classList.remove('hidden');
-  for (let i = 0; i < 60; i++) {
+  let regenerated = false;
+  for (let i = 0; i < 180; i++) {
     await new Promise(r => setTimeout(r, 5000));
     const sr = await fetch('/api/scan/' + STATE.scanId + '/status'); const sd = await sr.json();
     if (sd.purchase && sd.purchase.report_ready) {
@@ -935,7 +923,15 @@ async function pollUntilReady() {
       toast('Full AI report ready', false);
       return;
     }
+    // Auto-regenerate once after ~12 minutes if still not ready
+    if (i === 144 && !regenerated && STATE.token) {
+      regenerated = true;
+      fetch('/api/scan/' + STATE.scanId + '/regenerate?token=' + encodeURIComponent(STATE.token), { method: 'POST' })
+        .catch(() => {});
+      toast('Still working — re-queuing analysis…', false);
+    }
   }
+  toast('Report is taking longer than expected. Try refreshing.', true);
 }
 
 // ---------- Server edits ----------
@@ -1075,6 +1071,16 @@ async function loadGideonContext(controlId) {
   }
   body.querySelectorAll('button[data-q]').forEach(b => b.addEventListener('click', () => { $('gideonInput').value = b.dataset.q; sendGideon(); }));
 }
+function renderMarkdown(s) {
+  const bt = String.fromCharCode(96);
+  return escapeHtml(s)
+    .replace(new RegExp(bt+bt+bt+'[\\w]*\\n?([\\s\\S]*?)'+bt+bt+bt, 'g'), '<pre style="background:var(--panel-3);padding:10px;border-radius:4px;margin:6px 0;overflow-x:auto"><code style="font-family:var(--font-mono);font-size:12px">$1</code></pre>')
+    .replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>')
+    .replace(new RegExp(bt+'([^'+bt+']+)'+bt, 'g'), '<code style="font-family:var(--font-mono);background:var(--panel-3);padding:1px 5px;border-radius:3px">$1</code>')
+    .replace(/^[-\u2022]\s(.+)/gm, '<div style="padding:2px 0 2px 14px;position:relative"><span style="position:absolute;left:0;color:var(--accent)">›</span>$1</div>')
+    .replace(/\n\n/g, '<br><br>')
+    .replace(/\n/g, '<br>');
+}
 
 async function sendGideon() {
   const q = $('gideonInput').value.trim(); if (!q) return;
@@ -1091,7 +1097,7 @@ async function sendGideon() {
     method: 'POST', headers: {'content-type':'application/json'}, body: JSON.stringify({ question: q, control_id: STATE.openControl || undefined })
   });
   const d = await r.json();
-  body.insertAdjacentHTML('beforeend', '<div class="msg bot">'+escapeHtml(d.answer || d.error || '…')+'</div>');
+  body.insertAdjacentHTML('beforeend', '<div class="msg bot">'+renderMarkdown(d.answer || d.error || '…')+'</div>');
   body.scrollTop = body.scrollHeight;
   STATE.gideonMsgCount++;
 }

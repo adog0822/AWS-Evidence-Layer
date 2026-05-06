@@ -28,6 +28,7 @@ import { createCheckoutSession, verifyStripeSignature } from './stripe';
 import { checkToken, newDownloadToken, getPurchaseByScan, getPurchaseBySession, bumpDownloadCount } from './auth';
 import { buildReportHtml, computeDelta, annotateControlsWithDelta, type ScanEdit } from './report';
 import { gideonContextSuggestions, gideonFreeform } from './gideon';
+import { renderMethodologyPage, renderPrivacyPage, renderCookiesPage } from './static-pages';
 
 // ---------------- helpers ----------------
 
