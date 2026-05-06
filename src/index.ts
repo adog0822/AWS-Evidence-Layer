@@ -200,6 +200,9 @@ export default {
         return new Response(null, { status: 204, headers: CORS_HEADERS });
       }
 
+      if (m === 'GET' && p === '/methodology') return html(renderMethodologyPage());
+      if (m === 'GET' && p === '/privacy') return html(renderPrivacyPage());
+      if (m === 'GET' && p === '/cookies') return html(renderCookiesPage());
       if (m === 'GET' && (p === '/' || p === '/index.html')) return html(FRONTEND_HTML);
       if (m === 'GET' && p === '/api/cloudformation') {
         return new Response(CFN_TEMPLATE, { headers: { 'content-type': 'text/yaml; charset=utf-8' } });
