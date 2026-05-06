@@ -1073,10 +1073,10 @@ async function loadGideonContext(controlId) {
 }
 function renderMarkdown(s) {
   return escapeHtml(s)
-    .replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>')
-    .replace(/^[-\u2022]\s(.+)/gm, '<div style="padding:2px 0 2px 14px;position:relative"><span style="position:absolute;left:0;color:var(--accent)">&#8250;</span>$1</div>')
-    .replace(/\n\n/g, '<br><br>')
-    .replace(/\n/g, '<br>');
+    .replace(new RegExp('\\*\\*(.+?)\\*\\*', 'g'), '<strong>$1</strong>')
+    .replace(new RegExp('^[-\\u2022]\\s(.+)', 'gm'), '<div style="padding:2px 0 2px 14px;position:relative"><span style="position:absolute;left:0;color:var(--accent)">&#8250;</span>$1</div>')
+    .replace(new RegExp('\\n\\n', 'g'), '<br><br>')
+    .replace(new RegExp('\\n', 'g'), '<br>');
 }
 
 async function sendGideon() {
