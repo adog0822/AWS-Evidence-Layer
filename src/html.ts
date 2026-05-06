@@ -1072,12 +1072,9 @@ async function loadGideonContext(controlId) {
   body.querySelectorAll('button[data-q]').forEach(b => b.addEventListener('click', () => { $('gideonInput').value = b.dataset.q; sendGideon(); }));
 }
 function renderMarkdown(s) {
-  const bt = String.fromCharCode(96);
   return escapeHtml(s)
-    .replace(new RegExp(bt+bt+bt+'[\\w]*\\n?([\\s\\S]*?)'+bt+bt+bt, 'g'), '<pre style="background:var(--panel-3);padding:10px;border-radius:4px;margin:6px 0;overflow-x:auto"><code style="font-family:var(--font-mono);font-size:12px">$1</code></pre>')
     .replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>')
-    .replace(new RegExp(bt+'([^'+bt+']+)'+bt, 'g'), '<code style="font-family:var(--font-mono);background:var(--panel-3);padding:1px 5px;border-radius:3px">$1</code>')
-    .replace(/^[-\u2022]\s(.+)/gm, '<div style="padding:2px 0 2px 14px;position:relative"><span style="position:absolute;left:0;color:var(--accent)">›</span>$1</div>')
+    .replace(/^[-\u2022]\s(.+)/gm, '<div style="padding:2px 0 2px 14px;position:relative"><span style="position:absolute;left:0;color:var(--accent)">&#8250;</span>$1</div>')
     .replace(/\n\n/g, '<br><br>')
     .replace(/\n/g, '<br>');
 }
