@@ -14,9 +14,16 @@ export const FRONTEND_HTML = /* html */ `<!doctype html>
   --bg: #07090c; --panel: #0e1218; --panel-2: #131922; --panel-3: #1b2331;
   --border: #1f2937; --border-hi: #2a3447;
   --text: #e6edf3; --muted: #8b96a3; --dim: #5b6776;
-  --accent: #5eead4; --accent-2: #38bdf8; --accent-3: #c4b5fd;
+  --accent: #bfff5a; --accent-2: #bfff5a; --accent-3: #c4b5fd;
+  --accent-ink: #07090c;
   --warn: #f59e0b; --bad: #ef4444; --good: #22c55e; --partial: #eab308; --crit: #b91c1c;
   --mono: "JetBrains Mono","SF Mono",ui-monospace,Menlo,monospace;
+  --font-display: "Fraunces",Georgia,serif;
+  --font-body: "Inter Tight",system-ui,sans-serif;
+  --font-mono: "JetBrains Mono","SF Mono",ui-monospace,Menlo,monospace;
+  --border-strong: rgba(255,255,255,0.14);
+  --text-dim: rgba(255,255,255,0.65);
+  --text-muted: rgba(255,255,255,0.42);
 }
 * { box-sizing: border-box; }
 html, body { margin:0; padding:0; background: var(--bg); color: var(--text); font: 14.5px/1.55 -apple-system,"SF Pro Text","Inter",system-ui,sans-serif; -webkit-font-smoothing: antialiased; }
@@ -33,7 +40,7 @@ h1 em { color: var(--accent); font-style: normal; font-weight: 600; }
 h2 { font: 600 24px/1.2 "SF Pro Display","Inter",sans-serif; letter-spacing: -.01em; margin: 36px 0 14px; }
 h3 { font: 600 16px/1.3 "Inter",sans-serif; margin: 14px 0 6px; }
 p.lede { color: var(--muted); font-size: 17.5px; max-width: 720px; margin: 0 0 22px; }
-.eyebrow { display:inline-block; font: 600 11px/1 var(--mono); letter-spacing: .14em; text-transform: uppercase; color: var(--accent); padding: 6px 10px; border: 1px solid rgba(94,234,212,.25); border-radius: 999px; background: rgba(94,234,212,.06); margin-bottom: 16px; }
+.eyebrow { display:inline-block; font: 600 11px/1 var(--mono); letter-spacing: .14em; text-transform: uppercase; color: var(--accent); padding: 6px 10px; border: 1px solid rgba(191,255,90,.25); border-radius: 999px; background: rgba(191,255,90,.06); margin-bottom: 16px; }
 
 .grid { display: grid; gap: 14px; }
 .grid-3 { grid-template-columns: repeat(3, minmax(0,1fr)); }
@@ -47,7 +54,7 @@ p.lede { color: var(--muted); font-size: 17.5px; max-width: 720px; margin: 0 0 2
 
 .btn { display:inline-flex; align-items:center; gap:8px; padding: 10px 16px; border-radius: 8px; border: 1px solid var(--border); background: var(--panel-2); color: var(--text); font-weight: 600; cursor: pointer; font-size: 14px; font-family: inherit; transition: border-color .15s ease, background .15s ease; }
 .btn:hover { border-color: var(--accent); }
-.btn.primary { background: linear-gradient(135deg, var(--accent), var(--accent-2)); color: #07090c; border: 0; }
+.btn.primary { background: var(--accent); color: var(--accent-ink); border: 0; font-weight: 700; }
 .btn.primary:hover { filter: brightness(1.08); }
 .btn.ghost { background: transparent; }
 .btn.sm { padding: 6px 10px; font-size: 12px; }
@@ -120,7 +127,7 @@ pre { background: #0a0e13; padding: 12px; border-radius: 8px; border: 1px solid 
 .gideon { position: fixed; bottom: 22px; right: 22px; width: 380px; max-height: 78vh; display:flex; flex-direction: column; background: var(--panel); border: 1px solid var(--border-hi); border-radius: 14px; box-shadow: 0 24px 64px rgba(0,0,0,.55), 0 0 0 1px rgba(94,234,212,.08); z-index: 80; overflow: hidden; }
 .gideon header { padding: 12px 16px; border-bottom: 1px solid var(--border); display:flex; align-items:center; justify-content:space-between; }
 .gideon header .who { display:flex; align-items:center; gap: 8px; }
-.gideon header .who .ring { width: 10px; height: 10px; border-radius: 50%; background: var(--accent); box-shadow: 0 0 12px var(--accent); }
+.gideon header .who .ring { width: 10px; height: 10px; border-radius: 50%; background: var(--accent); box-shadow: 0 0 12px rgba(191,255,90,.7); }
 .gideon header .who strong { font-weight: 700; }
 .gideon header .who small { color: var(--muted); font-family: var(--mono); font-size: 11px; margin-left: 6px; }
 .gideon .body { flex: 1; overflow-y: auto; padding: 14px 16px; font-size: 14px; }
@@ -131,7 +138,8 @@ pre { background: #0a0e13; padding: 12px; border-radius: 8px; border: 1px solid 
 .gideon .msg.user { color: var(--accent); }
 .gideon .msg.bot { color: var(--text); white-space: pre-wrap; }
 .gideon footer { padding: 10px; border-top: 1px solid var(--border); display:flex; gap: 8px; }
-.gideon-btn { position: fixed; bottom: 22px; right: 22px; z-index: 70; padding: 12px 18px; border-radius: 999px; background: linear-gradient(135deg, var(--accent), var(--accent-2)); color: #07090c; border: 0; font-weight: 700; cursor: pointer; box-shadow: 0 12px 36px rgba(94,234,212,.3); }
+.gideon-btn { position: fixed; bottom: 24px; right: 24px; z-index: 70; width: 52px; height: 52px; border-radius: 50%; background: var(--accent); color: var(--accent-ink); border: 0; font-size: 20px; font-weight: 700; cursor: pointer; box-shadow: 0 8px 32px rgba(191,255,90,.35); display:flex; align-items:center; justify-content:center; transition: transform .15s ease, box-shadow .15s ease; }
+.gideon-btn:hover { transform: scale(1.08); box-shadow: 0 12px 40px rgba(191,255,90,.5); }
 
 .toast { position: fixed; bottom: 24px; left: 50%; transform: translateX(-50%); background: var(--panel); border: 1px solid var(--border-hi); padding: 10px 16px; border-radius: 10px; box-shadow: 0 12px 36px rgba(0,0,0,.5); z-index: 100; }
 .toast.error { border-color: var(--bad); color: var(--bad); }
@@ -219,9 +227,32 @@ footer.foot { color: var(--muted); font-size: 12px; padding: 32px 28px; text-ali
 .scan-meter .progress > span { display:block; height:100%; background: linear-gradient(90deg, var(--accent), var(--accent-2)); }
 
 /* Generating banner */
-.generating-banner { display:flex; align-items:center; gap:12px; padding:12px 16px; background:rgba(245,158,11,.1); border:1px solid rgba(245,158,11,.35); border-radius:10px; color:var(--warn); font-size:13.5px; margin-bottom:14px; }
-.generating-banner .spin { width:14px; height:14px; border:2px solid rgba(245,158,11,.35); border-top-color:var(--warn); border-radius:50%; animation:_spin .8s linear infinite; flex-shrink:0; }
+.generating-banner { display:flex; align-items:center; gap:16px; padding:28px 32px; background:rgba(191,255,90,.04); border:1px solid rgba(191,255,90,.2); border-radius:14px; color:var(--text); font-size:14px; margin-bottom:14px; }
+.generating-banner .spin { width:18px; height:18px; border:2px solid rgba(191,255,90,.25); border-top-color:var(--accent); border-radius:50%; animation:_spin .8s linear infinite; flex-shrink:0; }
 @keyframes _spin { to { transform:rotate(360deg); } }
+
+/* Stat tiles */
+.stat-tiles { display:grid; grid-template-columns:repeat(4,1fr); gap:12px; margin-bottom:20px; }
+@media(max-width:820px){ .stat-tiles { grid-template-columns:repeat(2,1fr); } }
+@media(max-width:480px){ .stat-tiles { grid-template-columns:1fr; } }
+.stat-tile { background:var(--panel); border:1px solid var(--border); border-radius:10px; padding:18px 20px; display:flex; flex-direction:column; gap:6px; }
+.stat-tile .st-label { font-family:var(--font-mono,var(--mono)); font-size:10px; text-transform:uppercase; letter-spacing:.1em; color:var(--muted); }
+.stat-tile .st-value { font-family:var(--font-display,"Fraunces",Georgia,serif); font-weight:300; font-size:36px; line-height:1; color:var(--text); }
+.stat-tile .st-value.good { color:var(--good); }
+.stat-tile .st-value.warn { color:var(--warn); }
+.stat-tile .st-value.bad { color:var(--bad); }
+.stat-tile .st-sub { font-family:var(--font-mono,var(--mono)); font-size:11px; color:var(--muted); }
+.stat-tile .st-bar { height:2px; background:var(--panel-3); border-radius:999px; overflow:hidden; margin-top:4px; }
+.stat-tile .st-bar span { display:block; height:100%; border-radius:999px; transition:width .6s ease; }
+
+/* Gap chart */
+.gap-chart { margin:22px 0 8px; }
+.gap-chart-label { font-family:var(--font-mono,var(--mono)); font-size:10px; text-transform:uppercase; letter-spacing:.1em; color:var(--muted); margin-bottom:10px; }
+.gap-chart svg { width:100%; display:block; }
+
+/* Post-purchase chip */
+.audit-chip { display:inline-flex; align-items:center; gap:8px; padding:6px 14px; border:1px solid rgba(191,255,90,.35); border-radius:999px; background:rgba(191,255,90,.06); font-family:var(--font-mono,var(--mono)); font-size:11px; color:var(--accent); letter-spacing:.06em; margin-bottom:14px; }
+.audit-chip .chip-dot { width:6px; height:6px; border-radius:50%; background:var(--accent); box-shadow:0 0 8px rgba(191,255,90,.6); }
 
 /* Workspace bar */
 .workspace-bar { display:flex; align-items:center; gap:12px; flex-wrap:wrap; padding:11px 16px; background:var(--panel); border:1px solid var(--border-hi); border-radius:10px; margin-bottom:14px; }
@@ -413,8 +444,14 @@ footer.foot { color: var(--muted); font-size: 12px; padding: 32px 28px; text-ali
     <!-- Generating banner (paid but Claude not done yet) -->
     <div id="generatingBanner" class="generating-banner hidden">
       <span class="spin"></span>
-      <span>Your report is being generated. This usually takes 10–15 minutes.</span>
-      <button class="btn sm" onclick="location.reload()" style="margin-left:auto;flex-shrink:0">Refresh</button>
+      <div style="flex:1;">
+        <div id="genBannerText" style="font-weight:600; margin-bottom:6px;">Analyzing your AWS environment…</div>
+        <div style="height:3px;background:rgba(191,255,90,.15);border-radius:999px;overflow:hidden;width:100%;max-width:300px;">
+          <div id="genProgressBar" style="height:100%;background:var(--accent);border-radius:999px;width:0%;transition:width .5s ease;"></div>
+        </div>
+        <div id="genProgressLabel" style="font-size:11px;margin-top:6px;color:var(--muted);font-family:var(--font-mono,var(--mono));">0 of 12 controls analyzed · 2–5 minutes</div>
+      </div>
+      <button class="btn sm" onclick="location.reload()" style="flex-shrink:0">Refresh</button>
     </div>
 
     <!-- Workspace bar (paid + report_ready) -->
@@ -427,21 +464,45 @@ footer.foot { color: var(--muted); font-size: 12px; padding: 32px 28px; text-ali
       <button class="btn ghost sm" id="wsResetEdits" style="color:var(--muted)">Reset edits</button>
     </div>
 
-    <div style="display:flex; align-items:flex-end; justify-content:space-between; gap:14px; flex-wrap:wrap; margin-bottom: 6px;">
+    <div style="display:flex; align-items:flex-end; justify-content:space-between; gap:14px; flex-wrap:wrap; margin-bottom: 16px;">
       <div>
-        <span class="eyebrow" id="reportEyebrow">Free-tier preview · heuristic scoring</span>
-        <h2 id="reportTitle" style="margin: 8px 0 4px;">Readiness Report</h2>
+        <div id="auditChipWrap" style="display:none;"><span class="audit-chip"><span class="chip-dot"></span><span id="auditChipText">Audit Grade · Unlocked</span></span></div>
+        <span class="eyebrow" id="reportEyebrow">Free scan · heuristic scoring</span>
+        <h2 id="reportTitle" style="margin: 8px 0 4px; font-family:var(--font-display,'Fraunces',Georgia,serif); font-weight:300;">Readiness Report</h2>
+        <div id="readiness" style="font-size:15px; color:var(--muted); font-family:var(--font-mono,var(--mono)); margin-top:4px;">—</div>
       </div>
       <div class="scan-meter">
-        <span class="label" id="resolvedCounter">0 of 0 resolved</span>
-        <div class="progress"><span id="resolvedBar" style="width:0%"></span></div>
+        <span class="label" id="resolvedCounter" style="display:none;">0 of 0 resolved</span>
+        <div class="progress" id="resolvedBarWrap" style="display:none;"><span id="resolvedBar" style="width:0%"></span></div>
       </div>
     </div>
 
-    <div class="grid grid-3">
-      <div class="card tight"><div class="legend"><span><span class="sw" style="background:var(--accent)"></span>Overall readiness</span></div><div id="readiness" style="font-size:24px;font-weight:700;margin-top:8px;">—</div></div>
-      <div class="card tight"><div class="legend"><span><span class="sw" style="background:var(--accent-2)"></span>Avg gap score</span></div><div id="gap" style="font-size:24px;font-weight:700;margin-top:8px;font-family:var(--mono);">—/100</div></div>
-      <div class="card tight"><div class="legend"><span><span class="sw" style="background:var(--accent-3)"></span>Evidence freshness</span></div><div id="fresh" style="font-size:24px;font-weight:700;margin-top:8px;font-family:var(--mono);">—/100</div></div>
+    <div class="stat-tiles" id="statTiles">
+      <div class="stat-tile">
+        <div class="st-label">Controls assessed</div>
+        <div class="st-value" id="statControls">—</div>
+        <div class="st-sub" id="statControlsSub"></div>
+      </div>
+      <div class="stat-tile">
+        <div class="st-label">Evidence items</div>
+        <div class="st-value" id="statEvidence">—</div>
+        <div class="st-sub" id="statEvidenceSub"></div>
+      </div>
+      <div class="stat-tile">
+        <div class="st-label">Avg gap score</div>
+        <div class="st-value" id="gap">—</div>
+        <div class="st-bar"><span id="gapBar" style="width:0%"></span></div>
+      </div>
+      <div class="stat-tile">
+        <div class="st-label">Evidence freshness</div>
+        <div class="st-value" id="fresh">—</div>
+        <div class="st-bar"><span id="freshBar" style="width:0%"></span></div>
+      </div>
+    </div>
+
+    <div class="gap-chart" id="gapChartWrap" style="display:none;">
+      <div class="gap-chart-label">Gap score by control</div>
+      <svg id="gapChartSvg" height="110" viewBox="0 0 800 110" preserveAspectRatio="none"></svg>
     </div>
 
     <div id="execSummary" class="card subtle" style="margin-top:14px; color: var(--muted);"></div>
@@ -490,22 +551,22 @@ footer.foot { color: var(--muted); font-size: 12px; padding: 32px 28px; text-ali
         <a class="btn primary hidden" id="dlHtml" target="_blank" rel="noopener">Download HTML report ↗</a>
         <a class="btn hidden" id="dlJson" target="_blank" rel="noopener">Download JSON</a>
       </div>
+    </div>
 
-      <!-- Evidence catalog -->
-      <div id="evidenceSection" class="hidden" style="margin-top:28px;">
-        <h3 style="margin-bottom:6px;">Evidence catalog <span id="evCount" style="font-weight:400;color:var(--muted);font-size:13px;font-family:var(--mono);"></span></h3>
-        <div class="ev-filter-bar" id="evFilterBar">
-          <select id="evServiceSel"></select>
-          <select id="evRegionSel"></select>
-          <div id="evStatusPills" style="display:flex;gap:4px;flex-wrap:wrap;"></div>
-          <input class="ev-search" id="evSearch" placeholder="Search API, summary, or ID…">
-          <button class="btn sm" id="evExpandAll">Expand all</button>
-          <button class="btn sm" id="evCollapseAll">Collapse all</button>
-          <button class="ev-pill-btn active" id="evCardViewBtn">Card</button>
-          <button class="ev-pill-btn" id="evTableViewBtn">Table</button>
-        </div>
-        <div id="evList"></div>
+    <!-- Evidence catalog (free + paid) -->
+    <div id="evidenceSection" class="hidden" style="margin-top:28px;">
+      <h3 style="margin-bottom:6px;">Evidence catalog <span id="evCount" style="font-weight:400;color:var(--muted);font-size:13px;font-family:var(--mono);"></span></h3>
+      <div class="ev-filter-bar" id="evFilterBar">
+        <select id="evServiceSel"></select>
+        <select id="evRegionSel"></select>
+        <div id="evStatusPills" style="display:flex;gap:4px;flex-wrap:wrap;"></div>
+        <input class="ev-search" id="evSearch" placeholder="Search API, summary, or ID…">
+        <button class="btn sm" id="evExpandAll">Expand all</button>
+        <button class="btn sm" id="evCollapseAll">Collapse all</button>
+        <button class="ev-pill-btn active" id="evCardViewBtn">Card</button>
+        <button class="ev-pill-btn" id="evTableViewBtn">Table</button>
       </div>
+      <div id="evList"></div>
     </div>
   </section>
 </main>
@@ -655,10 +716,36 @@ function renderReport(res, opts) {
   $('report').classList.remove('hidden');
   $('reportTitle').textContent = (opts.orgName || 'Org') + ' — SOC 2 Readiness' + (opts.demo ? ' (demo)' : '');
   $('reportEyebrow').textContent = opts.paid ? 'Full report · Sonnet 4.6 analysis' : 'Free-tier preview · heuristic scoring';
+  // Stat tiles
+  const controls = res.controls || [];
+  const passes = controls.filter(c => c.status === 'pass').length;
+  const fails = controls.filter(c => c.status === 'fail').length;
+  const partials = controls.filter(c => c.status === 'partial').length;
+  $('statControls').textContent = controls.length || '—';
+  $('statControlsSub').textContent = controls.length ? passes + ' pass · ' + partials + ' partial · ' + fails + ' fail' : '';
+  $('statControls').className = 'st-value' + (fails > 3 ? ' bad' : fails > 0 ? ' warn' : passes > 0 ? ' good' : '');
+
+  const evCount = (res.evidence || []).length;
+  $('statEvidence').textContent = evCount || '—';
+  $('statEvidenceSub').textContent = evCount ? 'across ' + new Set((res.evidence||[]).map(e=>e.service)).size + ' AWS services' : '';
+
+  const gapScore = res.overall_gap_score ?? null;
+  const freshScore = res.overall_freshness_score ?? null;
+  $('gap').textContent = gapScore !== null ? gapScore + '/100' : '—';
+  $('gap').className = 'st-value' + (gapScore !== null ? (gapScore < 40 ? ' bad' : gapScore < 70 ? ' warn' : ' good') : '');
+  const gapBarEl = $('gapBar');
+  if (gapBarEl) { gapBarEl.style.width = (gapScore || 0) + '%'; gapBarEl.style.background = gapScore < 40 ? 'var(--bad)' : gapScore < 70 ? 'var(--warn)' : 'var(--good)'; }
+
+  $('fresh').textContent = freshScore !== null ? freshScore + '/100' : '—';
+  $('fresh').className = 'st-value' + (freshScore !== null ? (freshScore < 40 ? ' bad' : freshScore < 70 ? ' warn' : ' good') : '');
+  const freshBarEl = $('freshBar');
+  if (freshBarEl) { freshBarEl.style.width = (freshScore || 0) + '%'; freshBarEl.style.background = freshScore < 40 ? 'var(--bad)' : freshScore < 70 ? 'var(--warn)' : 'var(--good)'; }
+
   $('readiness').textContent = res.overall_readiness || '—';
-  $('gap').textContent = (res.overall_gap_score ?? '—') + '/100';
-  $('fresh').textContent = (res.overall_freshness_score ?? '—') + '/100';
   $('execSummary').textContent = res.executive_summary || '';
+
+  // Gap chart (shows on both free and paid)
+  renderGapChart(controls);
 
   const ctrlHost = $('controls');
   ctrlHost.innerHTML = '';
@@ -668,6 +755,17 @@ function renderReport(res, opts) {
 
   // Resolved counter
   recomputeResolved(res);
+
+  // Audit chip
+  const chipWrap = $('auditChipWrap');
+  if (chipWrap) chipWrap.style.display = opts.paid ? 'block' : 'none';
+  const eyebrow = $('reportEyebrow');
+  if (eyebrow) eyebrow.textContent = opts.paid ? (opts.demo ? 'Demo · Full analysis' : 'Audit Grade · Claude analysis') : 'Free scan · heuristic scoring';
+
+  // Resolve counter — paid only
+  const rc = $('resolvedCounter'); const rb = $('resolvedBarWrap');
+  if (rc) rc.style.display = opts.paid ? '' : 'none';
+  if (rb) rb.style.display = opts.paid ? '' : 'none';
 
   // Paywall logic
   if (opts.paid) {
@@ -699,6 +797,12 @@ function renderReport(res, opts) {
     $('generatingBanner').classList.add('hidden');
     renderPaywallBlur(res);
     $('gideonOpen').classList.add('hidden');
+    // Show evidence catalog on free tier (items only, no raw body)
+    const freeEvidence = (res.evidence || []).map(e => ({ ...e, raw: null }));
+    if (freeEvidence.length > 0) {
+      $('evidenceSection').classList.remove('hidden');
+      renderEvidence(freeEvidence);
+    }
   }
 
   // Wire control row click → expand
@@ -884,6 +988,11 @@ $('buyBtn').onclick = async () => {
       localStorage.setItem(TOKEN_KEY(scanId), tok);
       // Strip query params so refresh doesn't re-fire
       history.replaceState({}, '', location.pathname + '?scan_id=' + encodeURIComponent(scanId));
+      // Auto-scroll to report after payment
+      setTimeout(() => {
+        const reportEl = $('report');
+        if (reportEl) reportEl.scrollIntoView({ behavior: 'smooth' });
+      }, 600);
     } else {
       toast('Payment succeeded but the report is still processing — refresh in a moment.', false);
     }
@@ -915,12 +1024,23 @@ async function pollUntilReady() {
   for (let i = 0; i < 180; i++) {
     await new Promise(r => setTimeout(r, 5000));
     const sr = await fetch('/api/scan/' + STATE.scanId + '/status'); const sd = await sr.json();
+    // Update progress bar
+    if (sd.ai_progress && sd.ai_progress.total > 0) {
+      const pct = Math.round((sd.ai_progress.completed / sd.ai_progress.total) * 100);
+      const pb = $('genProgressBar'); if (pb) pb.style.width = pct + '%';
+      const pl = $('genProgressLabel'); if (pl) pl.textContent = sd.ai_progress.completed + ' of ' + sd.ai_progress.total + ' controls analyzed';
+      const bt = $('genBannerText'); if (bt) bt.textContent = pct < 100 ? 'Analyzing controls with Claude…' : 'Assembling your report…';
+    }
     if (sd.purchase && sd.purchase.report_ready) {
       $('generatingBanner').classList.add('hidden');
       const rr = await fetch('/api/scan/' + STATE.scanId + '/results?token=' + encodeURIComponent(STATE.token));
       const res = await rr.json(); STATE.results = res;
       renderReport(res, { paid: true, orgName: sd.org_name, reportReady: true });
-      toast('Full AI report ready', false);
+      toast('Your report is ready', false);
+      setTimeout(() => {
+        if (!$('gideon').classList.contains('hidden')) return; // already open
+        openGideon('Howdy — your full audit report is ready. Open any control for remediation suggestions, or ask me where to start.');
+      }, 1200);
       return;
     }
     // Auto-regenerate once after ~12 minutes if still not ready
@@ -1045,12 +1165,14 @@ async function deleteAllEdits() {
 $('wsResetEdits').addEventListener('click', deleteAllEdits);
 
 // ---------- Gideon ----------
-$('gideonOpen').addEventListener('click', () => {
+function openGideon(greeting) {
   $('gideon').classList.remove('hidden');
   $('gideonOpen').classList.add('hidden');
-  if (STATE.openControl) loadGideonContext(STATE.openControl);
-  else { $('gideonBody').innerHTML = '<div class="msg bot">Howdy, I&apos;m Gideon. Open a control to get auto-generated remediation suggestions, or ask me anything about your scan.</div>'; }
-});
+  if (STATE.openControl) { loadGideonContext(STATE.openControl); return; }
+  const msg = greeting || 'Howdy. Open a control to get remediation suggestions, or ask me anything about your scan.';
+  $('gideonBody').innerHTML = '<div class="msg bot">'+escapeHtml(msg)+'</div>';
+}
+$('gideonOpen').addEventListener('click', () => openGideon());
 $('gideonClose').addEventListener('click', () => {
   $('gideon').classList.add('hidden');
   if (STATE.isPaid) $('gideonOpen').classList.remove('hidden');
@@ -1077,6 +1199,29 @@ function renderMarkdown(s) {
     .replace(new RegExp('^[-\\u2022]\\s(.+)', 'gm'), '<div style="padding:2px 0 2px 14px;position:relative"><span style="position:absolute;left:0;color:var(--accent)">&#8250;</span>$1</div>')
     .replace(new RegExp('\\n\\n', 'g'), '<br><br>')
     .replace(new RegExp('\\n', 'g'), '<br>');
+}
+
+function renderGapChart(controls) {
+  const wrap = $('gapChartWrap');
+  const svg = $('gapChartSvg');
+  if (!wrap || !svg || !controls || controls.length === 0) return;
+  wrap.style.display = 'block';
+  const sorted = [...controls].sort((a,b) => (a.gap_score ?? 0) - (b.gap_score ?? 0));
+  const W = 800; const H = 110; const barH = 64; const labelH = 22; const gapH = 6;
+  const n = sorted.length; const bw = Math.floor((W - (n-1)*gapH) / n);
+  const colorMap = { pass:'#22c55e', fail:'#ef4444', partial:'#eab308', inconclusive:'#5b6776' };
+  let html = '';
+  sorted.forEach((c, i) => {
+    const x = i * (bw + gapH);
+    const score = c.gap_score ?? 0;
+    const h = Math.max(4, Math.round((score / 100) * barH));
+    const y = barH - h;
+    const col = colorMap[c.status] || '#5b6776';
+    html += '<rect x="'+x+'" y="'+y+'" width="'+bw+'" height="'+h+'" rx="3" fill="'+col+'" opacity="0.85"/>';
+    html += '<text x="'+(x+bw/2)+'" y="'+(barH+labelH)+'" text-anchor="middle" font-family="JetBrains Mono,monospace" font-size="9" fill="#5b6776">'+escapeHtml(c.control_id)+'</text>';
+    html += '<text x="'+(x+bw/2)+'" y="'+(y-4)+'" text-anchor="middle" font-family="JetBrains Mono,monospace" font-size="9" fill="'+col+'" opacity="'+(score < 50 ? '1' : '0.7')+'">'+score+'</text>';
+  });
+  svg.innerHTML = html;
 }
 
 async function sendGideon() {
@@ -1199,7 +1344,7 @@ function applyEvidenceFilters() {
       '</div>' +
       '<div class="ev-card-body">' +
       (e.summary ? '<div style="color:var(--text);margin-bottom:6px">'+escapeHtml(e.summary)+'</div>' : '') +
-      (e.raw ? '<pre class="cli" style="max-height:140px;overflow:auto;margin-bottom:6px">'+escapeHtml(e.raw)+'</pre>' : '') +
+      (e.raw ? '<pre class="cli" style="max-height:140px;overflow:auto;margin-bottom:6px">'+escapeHtml(e.raw)+'</pre>' : (STATE.isPaid ? '' : '<div style="font-size:11px;color:var(--muted);font-style:italic;margin-bottom:6px;">Raw API response available with paid report</div>')) +
       '<div style="color:var(--dim);font-size:11px">ID: '+escapeHtml(e.id)+(e.rawBytes?' · '+e.rawBytes+'B':'')+(e.truncated?' · truncated':'')+'</div>' +
       '</div>' +
       '</div>'
