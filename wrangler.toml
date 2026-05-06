@@ -45,6 +45,6 @@ queue = "loxeai-analysis-queue"
 [[queues.consumers]]
 queue = "loxeai-analysis-queue"
 max_batch_size = 1
-max_batch_timeout = 5
+max_batch_timeout = 2
 max_retries = 3
 dead_letter_queue = "loxeai-analysis-dlq"
