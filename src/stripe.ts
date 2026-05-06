@@ -7,7 +7,7 @@ const STRIPE_API = 'https://api.stripe.com/v1';
 
 // Pre-created Stripe Price ID for the $29.99 SOC 2 Readiness Report.
 // Lets us update price in Stripe dashboard without redeploying the Worker.
-export const DEFAULT_PRICE_ID = 'price_1TTHBLLJoCCCN5JEgSw8Ed76p';
+export const DEFAULT_PRICE_ID = 'price_1TTeWHR14CvvPvmFLM3yF9ed';
 
 export async function createCheckoutSession(env: Env, opts: {
   scanId: string;
