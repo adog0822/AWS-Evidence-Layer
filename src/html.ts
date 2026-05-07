@@ -824,6 +824,9 @@ function renderReport(res, opts) {
   }
 
   // Wire control row click → expand
+  ctrlHost.querySelectorAll('[data-action="unlock"]').forEach(btn => {
+    btn.addEventListener('click', () => { const pw = $('paywallWrap'); if (pw) pw.scrollIntoView({behavior:'smooth'}); });
+  });
   ctrlHost.querySelectorAll('.ctrl-row').forEach(row => {
     row.addEventListener('click', (e) => {
       if (e.target.tagName === 'INPUT' || e.target.tagName === 'BUTTON' || e.target.tagName === 'A') return;
@@ -874,7 +877,7 @@ function renderControlDetailFree(c) {
     recsHtml,
     '<div style="margin-top:14px;padding:12px 14px;background:rgba(191,255,90,.04);border:1px solid rgba(191,255,90,.15);border-radius:8px;display:flex;align-items:center;justify-content:space-between;gap:12px;">',
     '<span style="font-size:13px;color:var(--muted);">Finding detail, CLI remediation &amp; auditor questions locked.</span>',
-    '<button class="btn primary sm" onclick="document.getElementById(\'paywallWrap\').scrollIntoView({behavior:\'smooth\'})">Unlock &#8594;</button>',
+    '<button class="btn primary sm" data-action="unlock">Unlock &#8594;</button>',
     '</div>',
   ].join('');
 }
