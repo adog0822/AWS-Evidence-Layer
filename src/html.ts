@@ -1371,7 +1371,7 @@ function exportEvidenceCSV() {
       : [e.id, e.service, e.region, e.api, e.severity||'', '"'+(e.summary||'').replace(/"/g,'""')+'"', '"'+(e.controls||[]).join(';')+'"'];
     lines.push(row.join(','));
   }
-  const blob = new Blob([lines.join('\n')], { type: 'text/csv' });
+  const blob = new Blob([lines.join(String.fromCharCode(10))], { type: 'text/csv' });
   const url = URL.createObjectURL(blob);
   const a = document.createElement('a');
   a.href = url; a.download = 'loxeai-evidence-' + (STATE.scanId || 'export') + '.csv';
