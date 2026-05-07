@@ -1291,6 +1291,7 @@ function renderEvidence(evidence) {
   $('evCardViewBtn').onclick = () => { STATE.evidenceView = 'card';  $('evCardViewBtn').classList.add('active'); $('evTableViewBtn').classList.remove('active'); applyEvidenceFilters(); syncEvidenceURL(); };
   $('evTableViewBtn').onclick = () => { STATE.evidenceView = 'table'; $('evTableViewBtn').classList.add('active'); $('evCardViewBtn').classList.remove('active'); applyEvidenceFilters(); syncEvidenceURL(); };
   $('evExportCsv').onclick = exportEvidenceCSV;
+}
 
 function rebuildStatusPills() {
   const pills = $('evStatusPills');
