@@ -501,7 +501,10 @@ footer.foot { color: var(--muted); font-size: 12px; padding: 32px 28px; text-ali
     </div>
 
     <div class="gap-chart" id="gapChartWrap" style="display:none;">
-      <div class="gap-chart-label">Gap score by control</div>
+      <div class="gap-chart-label" style="display:flex;align-items:center;justify-content:space-between;">
+        <span>Gap score by control</span>
+        <a href="/methodology#scoring" style="font-family:var(--font-mono,var(--mono));font-size:10px;color:var(--muted);text-decoration:none;letter-spacing:.06em;" onmouseover="this.style.color='var(--accent)'" onmouseout="this.style.color='var(--muted)'">How is this scored? →</a>
+      </div>
       <svg id="gapChartSvg" height="110" viewBox="0 0 800 110" preserveAspectRatio="none"></svg>
     </div>
 
@@ -565,6 +568,7 @@ footer.foot { color: var(--muted); font-size: 12px; padding: 32px 28px; text-ali
         <button class="btn sm" id="evCollapseAll">Collapse all</button>
         <button class="ev-pill-btn active" id="evCardViewBtn">Card</button>
         <button class="ev-pill-btn" id="evTableViewBtn">Table</button>
+        <button class="btn sm" id="evExportCsv">↓ CSV</button>
       </div>
       <div id="evList"></div>
     </div>
@@ -1286,7 +1290,7 @@ function renderEvidence(evidence) {
   $('evCollapseAll').onclick = () => document.querySelectorAll('.ev-card-item').forEach(el => el.classList.remove('ev-open'));
   $('evCardViewBtn').onclick = () => { STATE.evidenceView = 'card';  $('evCardViewBtn').classList.add('active'); $('evTableViewBtn').classList.remove('active'); applyEvidenceFilters(); syncEvidenceURL(); };
   $('evTableViewBtn').onclick = () => { STATE.evidenceView = 'table'; $('evTableViewBtn').classList.add('active'); $('evCardViewBtn').classList.remove('active'); applyEvidenceFilters(); syncEvidenceURL(); };
-}
+  $('evExportCsv').onclick = exportEvidenceCSV;
 
 function rebuildStatusPills() {
   const pills = $('evStatusPills');
@@ -1350,6 +1354,28 @@ function applyEvidenceFilters() {
       '</div>'
     ).join('');
   }
+}
+
+function exportEvidenceCSV() {
+  const isPaid = STATE.isPaid && !STATE.demo;
+  const rows = STATE.evidenceData || [];
+  if (rows.length === 0) { toast('No evidence to export', true); return; }
+  const headers = isPaid
+    ? ['id','service','region','api','severity','summary','controls','rawBytes','truncated']
+    : ['id','service','region','api','severity','summary','controls'];
+  const lines = [headers.join(',')];
+  for (const e of rows) {
+    const row = isPaid
+      ? [e.id, e.service, e.region, e.api, e.severity||'', '"'+(e.summary||'').replace(/"/g,'""')+'"', '"'+(e.controls||[]).join(';')+'"', e.rawBytes||'', e.truncated?'true':'false']
+      : [e.id, e.service, e.region, e.api, e.severity||'', '"'+(e.summary||'').replace(/"/g,'""')+'"', '"'+(e.controls||[]).join(';')+'"'];
+    lines.push(row.join(','));
+  }
+  const blob = new Blob([lines.join('\n')], { type: 'text/csv' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url; a.download = 'loxeai-evidence-' + (STATE.scanId || 'export') + '.csv';
+  document.body.appendChild(a); a.click(); document.body.removeChild(a);
+  URL.revokeObjectURL(url);
 }
 
 function syncEvidenceURL() {
