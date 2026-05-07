@@ -166,7 +166,7 @@ async function saveResults(env: Env, scanId: string, results: ScanResults): Prom
 function stripPaidContent(results: ScanResults): ScanResults {
   return {
     ...results,
-    evidence: [], // hide raw evidence from free tier
+    evidence: results.evidence.map(e => ({ ...e, raw: '' as string, rawBytes: undefined })) as any,
     controls: results.controls.map((c) => ({
       ...c,
       // Keep finding titles/severities for the blurred preview, hide the bodies + remediations
@@ -369,6 +369,12 @@ async function handleStatus(env: Env, scan: ScanRow): Promise<Response> {
       paid_at: purchase.paid_at,
       report_ready: reportReady,
     } : null,
+    ai_progress: purchase ? await (async () => {
+      const prog = await env.DB.prepare(
+        'SELECT completed_controls, total_controls FROM scan_ai_progress WHERE scan_id = ?'
+      ).bind(scan.id).first<{ completed_controls: number; total_controls: number }>();
+      return prog ? { completed: prog.completed_controls, total: prog.total_controls } : null;
+    })() : null,
   });
 }
 
@@ -633,6 +639,11 @@ async function handleAnalyzeControlMessage(env: Env, msg: Extract<QueueMessage, 
   await env.DB.prepare('INSERT OR REPLACE INTO scan_ai_controls (scan_id, control_id, result_json, analyzed_at) VALUES (?, ?, ?, ?)')
     .bind(scanId, controlId, JSON.stringify(result), Date.now()).run();
 
+  // Update progress counter
+  await env.DB.prepare(
+    'UPDATE scan_ai_progress SET completed_controls = (SELECT COUNT(*) FROM scan_ai_controls WHERE scan_id = ?) WHERE scan_id = ?'
+  ).bind(scanId, scanId).run();
+
   await maybeEnqueueAssemble(env, scanId, totalControls, downloadToken);
 }
 
@@ -642,6 +653,14 @@ async function maybeEnqueueAssemble(env: Env, scanId: string, totalControls: num
   const done = row?.cnt ?? 0;
   console.log('[queue:analyze_control] progress', { scanId, done, totalControls });
   if (done >= totalControls) {
+    // Check we haven't already sent the assemble message
+    const alreadyAssembled = await env.DB.prepare(
+      'SELECT completed_at FROM scan_ai_progress WHERE scan_id = ? AND completed_at IS NOT NULL'
+    ).bind(scanId).first();
+    if (alreadyAssembled) {
+      console.log('[queue:analyze_control] assemble already completed, skipping', { scanId });
+      return;
+    }
     console.log('[queue:analyze_control] all controls done, enqueueing assemble', { scanId });
     await env.ANALYSIS_QUEUE.send({ kind: 'assemble_report', scanId, downloadToken });
   }

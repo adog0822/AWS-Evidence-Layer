@@ -583,7 +583,7 @@ footer.foot { color: var(--muted); font-size: 12px; padding: 32px 28px; text-ali
   </div>
 </footer>
 
-<button class="gideon-btn hidden" id="gideonOpen">⌬ Ask Gideon</button>
+<button class="gideon-btn hidden" id="gideonOpen" title="Ask Gideon">⌬</button>
 
 <div id="gideon" class="gideon hidden">
   <header>
