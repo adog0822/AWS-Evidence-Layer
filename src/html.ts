@@ -1194,11 +1194,13 @@ async function loadGideonContext(controlId) {
   body.querySelectorAll('button[data-q]').forEach(b => b.addEventListener('click', () => { $('gideonInput').value = b.dataset.q; sendGideon(); }));
 }
 function renderMarkdown(s) {
-  return escapeHtml(s)
-    .replace(new RegExp('\\*\\*(.+?)\\*\\*', 'g'), '<strong>$1</strong>')
-    .replace(new RegExp('^[-\\u2022]\\s(.+)', 'gm'), '<div style="padding:2px 0 2px 14px;position:relative"><span style="position:absolute;left:0;color:var(--accent)">&#8250;</span>$1</div>')
-    .replace(new RegExp('\\n\\n', 'g'), '<br><br>')
-    .replace(new RegExp('\\n', 'g'), '<br>');
+  try {
+    return escapeHtml(s)
+      .replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>')
+      .replace(/^[-\u2022]\s(.+)/gm, '<div style="padding:2px 0 2px 14px;position:relative"><span style="position:absolute;left:0;color:var(--accent)">&#8250;</span>$1</div>')
+      .replace(/\n\n/g, '<br><br>')
+      .replace(/\n/g, '<br>');
+  } catch(e) { return escapeHtml(s); }
 }
 
 function renderGapChart(controls) {
