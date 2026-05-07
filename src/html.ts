@@ -874,7 +874,7 @@ function renderControlDetailFree(c) {
     recsHtml,
     '<div style="margin-top:14px;padding:12px 14px;background:rgba(191,255,90,.04);border:1px solid rgba(191,255,90,.15);border-radius:8px;display:flex;align-items:center;justify-content:space-between;gap:12px;">',
     '<span style="font-size:13px;color:var(--muted);">Finding detail, CLI remediation &amp; auditor questions locked.</span>',
-    '<button class="btn primary sm" onclick="document.getElementById(\'paywallWrap\').scrollIntoView({behavior:\'smooth\'})">Unlock →</button>',
+    '<button class="btn primary sm" onclick="document.getElementById(\'paywallWrap\').scrollIntoView({behavior:\'smooth\'})">Unlock &#8594;</button>',
     '</div>',
   ].join('');
 }
