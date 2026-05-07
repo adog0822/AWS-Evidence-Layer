@@ -27,6 +27,7 @@ export const FRONTEND_HTML = /* html */ `<!doctype html>
 }
 * { box-sizing: border-box; }
 html, body { margin:0; padding:0; background: var(--bg); color: var(--text); font: 14.5px/1.55 -apple-system,"SF Pro Text","Inter",system-ui,sans-serif; -webkit-font-smoothing: antialiased; }
+body { background: radial-gradient(ellipse at 60% 0%, #0d1520 0%, #07090c 55%); min-height: 100vh; }
 a { color: var(--accent-2); text-decoration: none; } a:hover { text-decoration: underline; }
 .container { max-width: 1180px; margin: 0 auto; padding: 0 28px; }
 header.nav { display:flex; align-items:center; justify-content:space-between; padding: 14px 28px; border-bottom: 1px solid var(--border); position: sticky; top: 0; background: rgba(7,9,12,0.85); backdrop-filter: blur(12px); z-index: 50; }
@@ -230,6 +231,10 @@ footer.foot { color: var(--muted); font-size: 12px; padding: 32px 28px; text-ali
 .generating-banner { display:flex; align-items:center; gap:16px; padding:28px 32px; background:rgba(191,255,90,.04); border:1px solid rgba(191,255,90,.2); border-radius:14px; color:var(--text); font-size:14px; margin-bottom:14px; }
 .generating-banner .spin { width:18px; height:18px; border:2px solid rgba(191,255,90,.25); border-top-color:var(--accent); border-radius:50%; animation:_spin .8s linear infinite; flex-shrink:0; }
 @keyframes _spin { to { transform:rotate(360deg); } }
+@keyframes _pulse { 0%,100% { box-shadow: 0 0 18px var(--accent); } 50% { box-shadow: 0 0 32px var(--accent), 0 0 8px var(--accent); } }
+@keyframes _fadeup { from { opacity:0; transform:translateY(14px); } to { opacity:1; transform:translateY(0); } }
+.brand .dot { animation: _pulse 3s ease-in-out infinite; }
+.m-hero { animation: _fadeup 0.6s ease both; }
 
 /* Stat tiles */
 .stat-tiles { display:grid; grid-template-columns:repeat(4,1fr); gap:12px; margin-bottom:20px; }
@@ -296,7 +301,7 @@ footer.foot { color: var(--muted); font-size: 12px; padding: 32px 28px; text-ali
   <nav class="m-nav-links">
     <a href="/methodology">Methodology</a>
     <a href="/privacy">Privacy</a>
-    <a href="mailto:arjav@loxeai.com" class="m-nav-cta">Book a call</a>
+    <a href="mailto:mehta.arja@northeastern.edu" class="m-nav-cta">Questions</a>
   </nav>
   <span class="m-nav-meter" id="meterText"></span>
 </header>
@@ -306,13 +311,13 @@ footer.foot { color: var(--muted); font-size: 12px; padding: 32px 28px; text-ali
   <section class="m-hero">
     <div class="m-wrap">
       <h1 class="m-h1">Compliance, but you can<br>actually check our work.</h1>
-      <p class="m-sub">Most SOC 2 tools sell you a dashboard. We give your auditor the receipts. Every finding traces to an exact AWS API call, hashed and reproducible.</p>
+      <p class="m-sub">Most compliance tools hand you a PDF and call it a day. We hand your auditor the raw AWS API responses, hashed and timestamped. 5 minutes to run. No persistent access.</p>
       <div class="m-cta-row">
         <a class="btn primary m-cta-primary" href="#scan">Run a free scan →</a>
         <a class="btn m-cta-secondary" href="/methodology">How it works</a>
-        <button class="btn m-cta-ghost" id="demoBtn">View demo (AcmePay)</button>
+        <button class="btn m-cta-ghost" id="demoBtn">See a real report →</button>
       </div>
-      <div class="m-trust">Cloudflare-edge · 30-day retention · Read-only IAM</div>
+      <div class="m-trust">Cloudflare Workers · read-only IAM · 30-day retention · no agents</div>
     </div>
   </section>
 
@@ -333,8 +338,8 @@ footer.foot { color: var(--muted); font-size: 12px; padding: 32px 28px; text-ali
         </div>
         <div class="m-card">
           <div class="m-card-label">03 / FAST</div>
-          <h3 class="m-card-title">30 minutes, not 30 days.</h3>
-          <p class="m-card-body">Provision a read-only role, paste the ARN, get a free gap report. Pay $29.99 if you want the auditor-grade version.</p>
+          <h3 class="m-card-title">5 minutes, not 30 days.</h3>
+          <p class="m-card-body">Provision a read-only role, paste the ARN, get a gap report before your coffee gets cold.</p>
         </div>
       </div>
     </div>
@@ -582,7 +587,8 @@ footer.foot { color: var(--muted); font-size: 12px; padding: 32px 28px; text-ali
       <a href="/methodology">Methodology</a>
       <a href="/privacy">Privacy</a>
       <a href="/cookies">Cookies</a>
-      <a href="mailto:arjav@loxeai.com">Talk to founder</a>
+      <a href="https://www.linkedin.com/in/arjav-mehta-175284258/" target="_blank" rel="noopener">LinkedIn</a>
+      <a href="mailto:mehta.arja@northeastern.edu">Contact</a>
     </div>
   </div>
 </footer>
@@ -762,9 +768,9 @@ function renderReport(res, opts) {
 
   // Audit chip
   const chipWrap = $('auditChipWrap');
-  if (chipWrap) chipWrap.style.display = opts.paid ? 'block' : 'none';
+  if (chipWrap) chipWrap.style.display = 'none';
   const eyebrow = $('reportEyebrow');
-  if (eyebrow) eyebrow.textContent = opts.paid ? (opts.demo ? 'Demo · Full analysis' : 'Audit Grade · Claude analysis') : 'Free scan · heuristic scoring';
+  if (eyebrow) eyebrow.textContent = opts.paid ? (opts.demo ? 'Demo · AcmePay, Inc.' : 'Full report · Claude analysis') : 'Free scan · heuristic scoring';
 
   // Resolve counter — paid only
   const rc = $('resolvedCounter'); const rb = $('resolvedBarWrap');
@@ -774,7 +780,15 @@ function renderReport(res, opts) {
   // Paywall logic
   if (opts.paid) {
     $('paid').classList.remove('hidden'); $('paywallWrap').classList.add('hidden');
-    $('critList').innerHTML = (res.critical_actions || []).map(c => '<li>'+escapeHtml(c)+'</li>').join('');
+    $('critList').innerHTML = (res.critical_actions || []).map(a => {
+      const parts = a.split(' — ');
+      if (parts.length >= 2) {
+        const label = parts[0];
+        const cli = parts.slice(1).join(' — ');
+        return '<li style="margin-bottom:12px;"><div style="font-weight:600;margin-bottom:4px;">'+escapeHtml(label)+'</div><pre style="white-space:pre-wrap;word-break:break-all;margin:0;font-size:11.5px;padding:8px 10px;background:#050709;border:1px solid var(--border);border-radius:6px;color:var(--accent);overflow-x:auto;">'+escapeHtml(cli)+'</pre></li>';
+      }
+      return '<li style="margin-bottom:8px;">'+escapeHtml(a)+'</li>';
+    }).join('');
     $('strList').innerHTML = (res.strengths || []).map(s => '<li>'+escapeHtml(s)+'</li>').join('');
     $('gideonOpen').classList.remove('hidden');
 
@@ -830,7 +844,7 @@ function renderReport(res, opts) {
 
 function renderControlRow(c, paid) {
   const resolved = loadResolved(STATE.scanId);
-  const detailHtml = paid ? renderControlDetail(c, resolved) : '';
+  const detailHtml = paid ? renderControlDetail(c, resolved) : renderControlDetailFree(c);
   const deltaHtml = c.delta ? '<span class="delta-pill ' + c.delta.trend.replace('regressed','down').replace('improved','up').replace('unchanged','flat') + '">Δ ' + c.delta.previous_gap_score + '→' + c.gap_score + '</span>' : '';
   return [
     '<div class="ctrl-row" data-cid="' + escapeHtml(c.control_id) + '">',
@@ -845,6 +859,23 @@ function renderControlRow(c, paid) {
     '  </div>',
     '</div>',
     '<div class="ctrl-detail hidden" id="cd_' + escapeHtml(c.control_id) + '">' + detailHtml + '</div>'
+  ].join('');
+}
+
+function renderControlDetailFree(c) {
+  const recs = (c.recommendations || []).slice(0, 3);
+  const recsHtml = recs.length
+    ? '<div style="margin-top:10px;"><div style="font:600 11px/1 var(--mono);letter-spacing:.08em;text-transform:uppercase;color:var(--muted);margin-bottom:8px;">What to fix</div>' +
+      recs.map(r => '<div style="padding:5px 0 5px 16px;position:relative;color:var(--text-dim);font-size:13px;"><span style="position:absolute;left:0;color:var(--accent)">›</span>'+escapeHtml(r)+'</div>').join('') +
+      '</div>'
+    : '';
+  return [
+    '<p style="color:var(--muted);margin:4px 0 10px;font-size:13.5px;">'+escapeHtml(c.summary||'')+'</p>',
+    recsHtml,
+    '<div style="margin-top:14px;padding:12px 14px;background:rgba(191,255,90,.04);border:1px solid rgba(191,255,90,.15);border-radius:8px;display:flex;align-items:center;justify-content:space-between;gap:12px;">',
+    '<span style="font-size:13px;color:var(--muted);">Finding detail, CLI remediation &amp; auditor questions locked.</span>',
+    '<button class="btn primary sm" onclick="document.getElementById(\'paywallWrap\').scrollIntoView({behavior:\'smooth\'})">Unlock →</button>',
+    '</div>',
   ].join('');
 }
 

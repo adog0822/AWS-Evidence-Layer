@@ -379,7 +379,15 @@ footer.foot { margin-top: 30px; padding-top: 14px; border-top: 1px solid #e5e7eb
 <h2>Executive Summary</h2>
 <p>${esc(args.execSummary)}</p>
 ${args.deltaSection}
-${args.criticalActions.length ? `<h2>Critical Actions</h2><ol>${args.criticalActions.map((a) => `<li>${esc(a)}</li>`).join('')}</ol>` : ''}
+${args.criticalActions.length ? `<h2>Critical Actions</h2><ol style="padding-left:20px;">${args.criticalActions.map((a) => {
+  const parts = a.split(' — ');
+  if (parts.length >= 2) {
+    const label = parts[0];
+    const cli = parts.slice(1).join(' — ');
+    return `<li style="margin-bottom:14px"><strong>${esc(label)}</strong><pre class="cli" style="white-space:pre-wrap;word-break:break-all;margin-top:6px;">${esc(cli)}</pre></li>`;
+  }
+  return `<li style="margin-bottom:8px">${esc(a)}</li>`;
+}).join('')}</ol>` : ''}
 ${args.strengths.length ? `<h2>Strengths</h2><ul>${args.strengths.map((a) => `<li>${esc(a)}</li>`).join('')}</ul>` : ''}
 <h2>Control-by-Control Analysis</h2>
 ${args.controlsHtml}
