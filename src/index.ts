@@ -386,7 +386,12 @@ async function handleResults(env: Env, scan: ScanRow, url: URL): Promise<Respons
   const results = await getResults(env, scan.id);
   if (!results) return err(404, 'no results');
   const token = url.searchParams.get('token');
+  const extId = url.searchParams.get('external_id') || '';
   const isPaid = await checkToken(env, scan.id, token);
+  // RLS: unpaid requests must supply the correct external_id
+  if (!isPaid && extId !== scan.external_id) {
+    return err(403, 'external_id mismatch — you can only view your own scans');
+  }
   const out = isPaid ? results : stripPaidContent(results);
   return json({ ...out, org_name: scan.org_name, status: scan.status, scan_id: scan.id });
 }

@@ -315,7 +315,7 @@ footer.foot { color: var(--muted); font-size: 12px; padding: 32px 28px; text-ali
       <div class="m-cta-row">
         <a class="btn primary m-cta-primary" href="#scan">Run a free scan →</a>
         <a class="btn m-cta-secondary" href="/methodology">How it works</a>
-        <button class="btn m-cta-ghost" id="demoBtn">See a real report →</button>
+        <button class="btn m-cta-ghost" id="demoBtn">See a demo →</button>
       </div>
       <div class="m-trust">Cloudflare Workers · read-only IAM · 30-day retention · no agents</div>
     </div>
@@ -667,7 +667,8 @@ async function refreshMeter() {
     const r = await fetch('/api/meter?external_id=' + encodeURIComponent(ext));
     if (r.ok) {
       const d = await r.json();
-      $('meterText').textContent = (d.daily_count || 0) + ' / ' + (d.daily_limit || 3) + ' scans today';
+      const cnt = d.daily_count || 0; const lim = d.daily_limit || 3;
+      $('meterText').textContent = Math.min(cnt, lim) + ' / ' + lim + ' scans today';
     }
   } catch {}
 }
@@ -706,7 +707,8 @@ async function pollStatus() {
     else if (d.status === 'complete') {
       bar.style.width = '100%';
       detailEl.textContent = (d.evidence_count || 0) + ' evidence items collected. Heuristic scoring done.';
-      const rr = await fetch('/api/scan/' + STATE.scanId + '/results');
+      const extId = localStorage.getItem('loxeai.external_id') || '';
+      const rr = await fetch('/api/scan/' + STATE.scanId + '/results?external_id=' + encodeURIComponent(extId));
       const res = await rr.json();
       STATE.results = res;
       renderReport(res, { paid: false, orgName: d.org_name });
@@ -1040,7 +1042,10 @@ $('buyBtn').onclick = async () => {
 
   // If we have a scanId, load the latest results (paid view if token present)
   if (STATE.scanId) {
-    const qs = STATE.token ? ('?token=' + encodeURIComponent(STATE.token)) : '';
+    const extId = localStorage.getItem('loxeai.external_id') || '';
+    const qs = STATE.token
+      ? ('?token=' + encodeURIComponent(STATE.token))
+      : ('?external_id=' + encodeURIComponent(extId));
     const r = await fetch('/api/scan/' + STATE.scanId + '/results' + qs);
     if (r.ok) {
       const res = await r.json();

@@ -4,3 +4,9 @@ node_modules/
 dist/
 .wrangler/
 *.local
+src/analyzer.ts
+src/report.ts
+src/gideon.ts
+src/stripe.ts
+src/auth.ts
+wrangler.toml
