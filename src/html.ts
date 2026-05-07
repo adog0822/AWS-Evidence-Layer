@@ -1195,7 +1195,7 @@ async function loadGideonContext(controlId) {
 }
 function renderMarkdown(s) {
   const escaped = escapeHtml(s);
-  const bold = escaped.replace(new RegExp('\\*\\*([^*]+)\\*\\*', 'g'), '<strong>$1</strong>');
+  const bold = escaped.split('**').map((part, i) => i % 2 === 1 ? '<strong>' + part + '</strong>' : part).join('');
   const bullets = bold.replace(new RegExp('^[-\\u2022]\\s(.+)', 'gm'), '<div style="padding:2px 0 2px 14px;position:relative"><span style="position:absolute;left:0;color:var(--accent)">&#8250;</span>$1</div>');
   const paras = bullets.replace(new RegExp('\\n\\n', 'g'), '<br><br>');
   return paras.replace(new RegExp('\\n', 'g'), '<br>');
