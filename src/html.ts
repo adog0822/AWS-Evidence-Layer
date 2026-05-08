@@ -15,7 +15,8 @@ export const FRONTEND_HTML = /* html */ `<!doctype html>
 <link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,200;0,9..144,300;0,9..144,400;1,9..144,200&family=JetBrains+Mono:wght@400;700&family=Inter+Tight:wght@300;400;500;600;700&display=swap" rel="stylesheet">
 <meta property="og:title" content="LoxeAI — AWS Evidence Layer for SOC 2" />
 <meta property="og:description" content="Machine-verifiable AWS audit evidence for SOC 2. Every finding traces to the exact API call that generated it." />
-<meta property="og:url" content="https://pilot.loxeai.com" />
+<meta property="og:url" content="https://loxeai.com" />
+<link rel="canonical" href="https://loxeai.com" />
 <meta property="og:type" content="website" />
 <style>
 :root {
@@ -417,7 +418,7 @@ footer.foot { color: var(--muted); font-size: 12px; padding: 32px 28px; text-ali
       <div class="m-proof-grid">
         <div class="m-proof-card">
           <p class="m-proof-quote">&ldquo;The control is actually working — you just can&apos;t prove it six months later because the proof was in a screenshot someone saved to a folder nobody remembers.&rdquo;</p>
-          <div class="m-proof-attr">— Anonymous SaaS founder &middot; r/soc2</div>
+          <div class="m-proof-attr">— Anonymous SaaS founder &middot; enterprise saas</div>
         </div>
         <div class="m-proof-card">
           <p class="m-proof-quote">&ldquo;Evidence collection is a problem even with tools that can be ridiculously expensive. Used Drata, wasn&apos;t that good. Used Vanta — not that much automation.&rdquo;</p>

@@ -67,7 +67,7 @@ const PAGE_NAV = `<nav class="sp-nav">
   <a href="/" class="sp-back">← Back</a>
 </nav>`;
 
-const PAGE_FOOT = `<footer class="sp-foot">© 2026 LoxeAI · pilot.loxeai.com · read-only · ExternalId-bound</footer></body></html>`;
+const PAGE_FOOT = `<footer class="sp-foot">© 2026 LoxeAI · loxeai.com · read-only · ExternalId-bound</footer></body></html>`;
 
 export function renderMethodologyPage(): string {
   return PAGE_HEAD('Methodology') + `<body>
