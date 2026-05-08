@@ -362,11 +362,11 @@ footer.foot { color: var(--muted); font-size: 12px; padding: 32px 28px; text-ali
           <a class="btn m-price-cta" href="#scan">Run free scan →</a>
         </div>
         <div class="m-price-card m-price-featured">
-          <div class="m-price-tier">Most popular</div>
-          <div class="m-price-amount">$29.99</div>
-          <div class="m-price-tag">Audit-grade report</div>
+          <div class="m-price-tier">One-time, per report</div>
+          <div class="m-price-amount">$39.99</div>
+          <div class="m-price-tag">Audit-verifiable report</div>
           <ul class="m-price-list">
-            <li>Deep analysis across 12 SOC 2 controls</li>
+            <li>Deep analysis across 12 Critical SOC 2 controls</li>
             <li>Traceable evidence</li>
             <li>Remediation CLI commands</li>
             <li>Gideon compliance copilot</li>
@@ -538,12 +538,12 @@ footer.foot { color: var(--muted); font-size: 12px; padding: 32px 28px; text-ali
         <ul>
           <li>Complete remediation roadmap with copy-pasteable AWS CLI commands</li>
           <li>Auditor-ready evidence package (SHA-256 verified)</li>
-          <li>Gideon AI compliance copilot — context-aware, scan-grounded</li>
+          <li>Gideon AI compliance copilot,context-aware, scan-grounded</li>
           <li>Human-in-the-loop report editing &amp; redactions</li>
           <li>Re-scan delta comparison vs your last report</li>
           <li>Print-optimized HTML for auditor submission</li>
         </ul>
-        <div class="price">$29.99<small>one-time, per report</small></div>
+        <div class="price">$39.99<small>one-time, per report</small></div>
         <button class="btn primary cta" id="buyBtn">Unlock full report →</button>
         <div class="footnote">Stripe Checkout · Secured by Stripe</div>
       </div>
