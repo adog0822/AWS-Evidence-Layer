@@ -1,58 +1,76 @@
-# LoxeAI Pilot v2 — Evidence Tracer
+# LoxeAI — AWS Trust Infrastructure for SOC 2
 
-Cloudflare Workers-based SOC 2 audit readiness platform. One Worker, one HTML
-file, D1 + R2 + Workers AI bindings, Stripe checkout. Customer connects a
-read-only AWS role; we collect evidence across 15 services and 6 regions, run
-heuristic scoring instantly, and unlock full Sonnet 4.6 analysis the moment
-they pay ($29.99/report).
+Automated AWS evidence collection and control mapping for SOC 2 Type I audits.
+Read-only scan across 12 AICPA Trust Services Criteria, heuristic scoring in
+minutes, full Claude analysis unlocked at $39.99.
+
+**Live:** [pilot.loxeai.com](https://pilot.loxeai.com)
+
+---
+
+## What it does
+
+1. You deploy a read-only IAM role via CloudFormation (one click, ~2 min)
+2. Paste the Role ARN — we scan 15 AWS services across 6 regions
+3. Free gap report in under 5 minutes: 12 controls scored, evidence catalog, gap chart
+4. Pay $39.99 to unlock: Finding-level detail, CLI remediation
+   commands, Gideon compliance copilot, SHA-256 traceable evidence, HTML report
+   for your auditor
+
+ No persistent access. Read-only ExternalId-bound role.
+Your data deletes automatically after 30 days — or instantly on request.
+
+---
 
 ## Two-tier flow
 
-| Stage | What runs | Cost / time |
+| Stage | What runs | Time |
 |---|---|---|
-| Free tier | AWS evidence collection + rule-based heuristic scoring (no Claude) | ~3-5 min, AWS API calls only |
-| Paid (post-Stripe) | All 12 controls analyzed by Claude Sonnet 4.6 + R2 pre-generated HTML report + Gideon copilot | ~30-60s of Claude after webhook |
+| Free | Evidence collection + heuristic scoring (no Claude) | 3–5 min |
+| Paid | Claude Sonnet 4.5 analysis × 12 controls + Gideon copilot | ~2–5 min after payment |
 
-The free tier is a real, useful gap-score preview — not a teaser. The paid
-upgrade replaces the heuristic scoring with finding-level AI analysis and
-unlocks Gideon, edits, redactions, and the print-ready report.
+---
 
-## Layout
+## What's in this repo
+src/
+├── index.ts        # Cloudflare Worker entry + all API routes
+├── html.ts         # Single-file frontend (dark, monospace-accented)
+├── scanner.ts      # AWS evidence collection — 15 services, 6 regions
+├── controls.ts     # 12 SOC 2 control definitions + AICPA mapping
+├── scoring.ts      # Free-tier heuristic gap scoring (no Claude)
+├── aws.ts          # SigV4 + STS AssumeRole (pure Web Crypto, no SDK)
+├── cfn.ts          # Read-only CloudFormation template for customers
+├── demo.ts         # AcmePay hardcoded demo scan
+├── types.ts        # Shared TypeScript types
+└── static-pages.ts # Methodology, Privacy, Cookies pages
+migrations/
+├── 0001_initial.sql       # Core schema
+├── 0002_queues_gideon.sql # Queue + Gideon conversation tables
+└── 0003_access_log.sql    # Data access audit log
 
-```
-.
-├── wrangler.toml
-├── migrations/0001_initial.sql      # D1 schema
-└── src/
-    ├── index.ts                     # Worker entry + router
-    ├── types.ts                     # Shared types
-    ├── aws.ts                       # SigV4 + STS AssumeRole (pure Web Crypto)
-    ├── scanner.ts                   # 15 AWS service scanners + truncate-by-severity (12 concurrency)
-    ├── controls.ts                  # 12 SOC 2 controls metadata + disclaimers
-    ├── scoring.ts                   # FREE-TIER: rule-based heuristic gap scoring
-    ├── analyzer.ts                  # PAID: Claude Sonnet 4.6 per-control analysis (final prompts)
-    ├── report.ts                    # Standalone print-ready HTML report + scan delta + SHA-256
-    ├── stripe.ts                    # Checkout (fixed price ID) + webhook signature verify
-    ├── gideon.ts                    # Compliance copilot — context + free-form modes
-    ├── auth.ts                      # download_token validation
-    ├── cfn.ts                       # Customer-facing CloudFormation template
-    ├── demo.ts                      # Hardcoded AcmePay demo scan
-    └── html.ts                      # Single-file frontend (dark, monospace-accented)
-```
+The paid analysis pipeline (Anthropic prompts, report generation, Gideon,
+Stripe, auth) is not in this repo. The scanner, frontend, and control
+mapping are fully open — your auditor can verify exactly what API calls
+we make and how findings map to controls.
 
-## First-time setup
+---
+
+## Self-hosting / development
 
 ```bash
 npm install
 npx wrangler login
 
-# Create D1 + paste database_id into wrangler.toml
+# D1 database
 npx wrangler d1 create loxeai-pilot-db
+# paste database_id into wrangler.toml
 
 # Apply schema
 npx wrangler d1 execute loxeai-pilot-db --file=migrations/0001_initial.sql --remote
+npx wrangler d1 execute loxeai-pilot-db --file=migrations/0002_queues_gideon.sql --remote
+npx wrangler d1 execute loxeai-pilot-db --file=migrations/0003_access_log.sql --remote
 
-# Create R2 bucket
+# R2 bucket
 npx wrangler r2 bucket create loxeai-pilot-reports
 
 # Secrets
@@ -61,56 +79,41 @@ npx wrangler secret put STRIPE_SECRET_KEY
 npx wrangler secret put STRIPE_WEBHOOK_SECRET
 npx wrangler secret put LOXEAI_AWS_ACCESS_KEY_ID
 npx wrangler secret put LOXEAI_AWS_SECRET_ACCESS_KEY
-# Optional: STRIPE_PRICE_ID (defaults to price_1TTHBLLJoCCCN5JEgSw8Ed76p)
-# Optional: LOXEAI_AWS_SESSION_TOKEN
 
 # Deploy
 npx wrangler deploy
-
-# Add the custom domain pilot.loxeai.com in the Cloudflare dashboard
-# (Workers & Pages → loxeai-pilot → Settings → Domains & Routes → Add custom domain)
 ```
 
-## Architecture notes
+---
 
-- **Scan execution**: `POST /api/scan` → enqueues evidence collection via
-  `ctx.waitUntil()`. Free-tier heuristic scoring runs immediately after
-  evidence collection completes; status flips to `complete`. The frontend
-  polls `/status` and renders the blurred paywall over real heuristic scores.
-- **Post-purchase pipeline**: Stripe `checkout.session.completed` webhook
-  generates a `download_token`, then kicks off Claude analysis (3-at-a-time
-  concurrency) in `waitUntil()`. After analysis completes, the report HTML +
-  JSON are pre-rendered and written to R2 (`reports/{scan_id}/report.html`).
-- **Severity-aware truncation**: `truncateEvidence()` parses JSON/XML, sorts
-  arrays by severity, and *never drops CRITICAL findings* — even if they push
-  past the 4000-char cap.
-- **Scan delta**: When a previous completed scan exists for the same
-  `external_id`, `report.ts` annotates each control with `previous_gap_score`
-  and a `trend` pill, plus a "Fixed since last scan" / "New gaps" header.
-- **Gating**: paid endpoints require `?token=` query param. The
-  `/api/scan/token?session_id=...` endpoint resolves the token after Stripe
-  redirects back with `?session_id={CHECKOUT_SESSION_ID}`. Token is stored in
-  `localStorage` for refresh resilience.
-- **Rate limit**: `scan_meter` table — 3 scans/external_id/day, 1 concurrent.
+## Architecture
 
-## Prompt structure (analyzer.ts)
+- **Runtime:** Cloudflare Workers (no VM, no container, stateless)
+- **Database:** Cloudflare D1 (SQLite at the edge)
+- **Storage:** Cloudflare R2 (report artifacts)
+- **Queue:** Cloudflare Queues (parallel Claude analysis per control)
+- **Payments:** Stripe Checkout
+- **AI:** Anthropic Claude Sonnet 4.5
 
-Per-control system + user prompts implement the spec exactly:
+Evidence collection fans out in parallel (12 concurrent) across services
+and regions. Free-tier scoring is fully deterministic — same evidence always
+produces the same scores, no model involved. Paid analysis runs each control
+through Claude independently via Cloudflare Queues, 12 messages in parallel,
+assembled into a final report when all complete.
 
-- Sonnet 4.6 (`claude-sonnet-4-6`).
-- Evidence is sorted CRITICAL → HIGH → MEDIUM → LOW before rendering into the
-  prompt.
-- Output is a strict JSON shape: `status`, `gap_score`, `freshness_score`,
-  `audit_risk`, `summary`, `critical_findings[]`, `recommended_remediations[]`,
-  `auditor_questions[]`.
-- For `CC5.2`, `CC6.2`, `CC9.2`: the system prompt mandates a prominent
-  process-controls disclaimer in the summary.
+Rate limit: 5 scans / ExternalId / day. 1 concurrent scan per ExternalId.
 
-## Known follow-ups before public launch
+---
 
-- Replace `arn:aws:iam::000000000000:role/LoxeAIPilotScanner` placeholder in
-  `src/cfn.ts` with the real LoxeAI scanner principal.
-- Verify the `STRIPE_PRICE_ID` is live in test mode and that the webhook
-  endpoint is registered in Stripe.
-- Add structured logging / alerting for failed Claude calls (currently logged
-  to console.error only).
+## Data & privacy
+
+Every access to your scan data is logged and visible to you on the scan page.
+You can delete all scan data instantly — one button, no email required.
+Full data policy: [pilot.loxeai.com/methodology#data](https://pilot.loxeai.com/methodology#data)
+
+---
+
+## Contact
+
+Built by [Arjav Mehta](https://www.linkedin.com/in/arjav-mehta-175284258/) ·
+[mehta.arja@northeastern.edu](mailto:mehta.arja@northeastern.edu)
