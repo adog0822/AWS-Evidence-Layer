@@ -15,6 +15,7 @@ export interface Env {
   ENVIRONMENT: string;
   PRICE_CENTS: string;
   DAILY_SCAN_LIMIT: string;
+  ADMIN_TOKEN?: string;
   // LoxeAI scanner principal credentials (set via `wrangler secret put`)
   LOXEAI_AWS_ACCESS_KEY_ID: string;
   LOXEAI_AWS_SECRET_ACCESS_KEY: string;

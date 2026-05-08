@@ -232,6 +232,7 @@ export default {
         return json(await getMeter(env, ext));
       }
       if (m === 'GET' && p === '/api/health') return json({ ok: true, time: Date.now() });
+      if (m === 'GET' && p === '/api/admin/stats') return await handleAdminStats(req, env);
 
       if (m === 'POST' && p === '/api/scan') return await handleStartScan(req, env, ctx);
       if (m === 'POST' && p === '/api/stripe/webhook') return await handleStripeWebhook(req, env, ctx);
@@ -691,6 +692,52 @@ async function handleDeleteScan(req: Request, env: Env, scan: ScanRow, url: URL)
   try { await env.BUCKET.delete(`reports/${scan.id}/report.html`); } catch {}
   try { await env.BUCKET.delete(`reports/${scan.id}/package.json`); } catch {}
   return json({ ok: true, deleted: scan.id, message: 'All scan data has been permanently deleted.' });
+}
+
+// ============================================================
+// GET /api/admin/stats — internal analytics (token-protected)
+// ============================================================
+
+async function handleAdminStats(req: Request, env: Env): Promise<Response> {
+  const adminToken = env.ADMIN_TOKEN || '';
+  const provided = new URL(req.url).searchParams.get('token') || '';
+  if (!adminToken || provided !== adminToken) return err(401, 'unauthorized');
+
+  const weekAgo = Date.now() - 7 * 24 * 60 * 60 * 1000;
+
+  const [totalScans, weekScans, uniqueAccounts, paidReports, activeScans] = await Promise.all([
+    env.DB.prepare('SELECT COUNT(*) as n FROM scans').first<{ n: number }>(),
+    env.DB.prepare('SELECT COUNT(*) as n FROM scans WHERE created_at > ?').bind(weekAgo).first<{ n: number }>(),
+    env.DB.prepare('SELECT COUNT(DISTINCT aws_account_id) as n FROM scans WHERE aws_account_id IS NOT NULL').first<{ n: number }>(),
+    env.DB.prepare('SELECT COUNT(*) as n FROM report_purchases WHERE status = ?').bind('paid').first<{ n: number }>(),
+    env.DB.prepare("SELECT COUNT(*) as n FROM scans WHERE status IN ('scanning','analyzing')").first<{ n: number }>(),
+  ]);
+
+  const completedScans = await env.DB.prepare("SELECT COUNT(*) as n FROM scans WHERE status = 'complete'").first<{ n: number }>();
+  const conversionPct = completedScans?.n && completedScans.n > 0
+    ? ((paidReports?.n ?? 0) / completedScans.n * 100).toFixed(1)
+    : '0.0';
+
+  const recentScans = await env.DB.prepare(
+    'SELECT id, org_name, aws_account_id, status, created_at, evidence_count FROM scans ORDER BY created_at DESC LIMIT 20'
+  ).all();
+
+  return json({
+    as_of: new Date().toISOString(),
+    scans: {
+      total: totalScans?.n ?? 0,
+      this_week: weekScans?.n ?? 0,
+      active_now: activeScans?.n ?? 0,
+      completed: completedScans?.n ?? 0,
+      unique_aws_accounts: uniqueAccounts?.n ?? 0,
+    },
+    revenue: {
+      paid_reports: paidReports?.n ?? 0,
+      conversion_pct: conversionPct + '%',
+      estimated_revenue_usd: ((paidReports?.n ?? 0) * 39.99).toFixed(2),
+    },
+    recent: recentScans.results,
+  });
 }
 
 // ============================================================
