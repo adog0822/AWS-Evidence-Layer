@@ -105,6 +105,24 @@ async function getMeter(env: Env, externalId: string): Promise<{ daily_count: nu
   return { daily_count: daily, daily_limit: limit, total: row?.scan_count ?? 0 };
 }
 
+// ---------------- audit log ----------------
+
+async function logAccess(env: Env, scanId: string, action: string, actor: string, req?: Request): Promise<void> {
+  try {
+    let ipHash: string | null = null;
+    if (req) {
+      const ip = req.headers.get('cf-connecting-ip') || req.headers.get('x-forwarded-for') || 'unknown';
+      const buf = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(ip));
+      ipHash = Array.from(new Uint8Array(buf)).map(b => b.toString(16).padStart(2, '0')).join('').slice(0, 16);
+    }
+    await env.DB.prepare(
+      'INSERT INTO scan_access_log (scan_id, action, actor, ip_hash, created_at) VALUES (?, ?, ?, ?, ?)'
+    ).bind(scanId, action, actor, ipHash, Date.now()).run();
+  } catch (e) {
+    console.error('[audit] failed to log access', { scanId, action, error: (e as any)?.message });
+  }
+}
+
 // ---------------- scan rows ----------------
 
 interface ScanRow {
@@ -235,7 +253,7 @@ export default {
         return await handleGideonReset(env, scan, url);
       }
 
-      const scanIdMatch = p.match(/^\/api\/scan\/([a-zA-Z0-9_]+)\/(status|results|purchase|report|gideon|edit|edits|analyze|regenerate)$/);
+      const scanIdMatch = p.match(/^\/api\/scan\/([a-zA-Z0-9_]+)\/(status|results|purchase|report|gideon|edit|edits|analyze|regenerate|audit|delete)$/);
       if (scanIdMatch) {
         const id = scanIdMatch[1];
         const action = scanIdMatch[2];
@@ -253,6 +271,8 @@ export default {
         // /analyze is now internal (post-purchase) only — return 410 Gone
         if (m === 'POST' && action === 'analyze') return err(410, 'AI analysis is triggered automatically after purchase.');
         if (m === 'POST' && action === 'regenerate') return await handleRegenerate(req, env, scan, url);
+        if (m === 'GET' && action === 'audit') return await handleAuditLog(env, scan, url);
+        if (m === 'DELETE' && action === 'delete') return await handleDeleteScan(req, env, scan, url);
       }
 
       return err(404, 'not found', { path: p });
@@ -393,6 +413,7 @@ async function handleResults(env: Env, scan: ScanRow, url: URL): Promise<Respons
     return err(403, 'external_id mismatch — you can only view your own scans');
   }
   const out = isPaid ? results : stripPaidContent(results);
+  logAccess(env, scan.id, 'view_results', isPaid ? 'token_holder' : 'owner', undefined);
   return json({ ...out, org_name: scan.org_name, status: scan.status, scan_id: scan.id });
 }
 
@@ -516,6 +537,8 @@ async function handleReport(env: Env, scan: ScanRow, url: URL): Promise<Response
   if (!(await checkToken(env, scan.id, token))) return err(403, 'invalid or missing token');
   const format = url.searchParams.get('format') || 'html';
 
+  logAccess(env, scan.id, 'download_report', 'token_holder', undefined);
+
   // Increment download counter
   if (token) await bumpDownloadCount(env, token);
 
@@ -559,6 +582,8 @@ async function handleGideon(req: Request, env: Env, scan: ScanRow, url: URL): Pr
   const body = await req.json<GideonBody>().catch((): GideonBody => ({}));
   const results = await getResults(env, scan.id);
   if (!results) return err(404, 'no results');
+
+  logAccess(env, scan.id, 'gideon_query', 'token_holder', undefined);
 
   // Context mode: only control_id, no question → return pre-baked suggestions
   if (body.control_id && !body.question) {
@@ -612,6 +637,60 @@ async function handleGideonReset(env: Env, scan: ScanRow, url: URL): Promise<Res
   await env.DB.prepare('DELETE FROM gideon_messages WHERE scan_id = ?').bind(scan.id).run();
   console.log('[gideon:reset] cleared conversation', { scanId: scan.id });
   return json({ ok: true, scan_id: scan.id });
+}
+
+// ============================================================
+// GET /api/scan/:id/audit?external_id= — data access log
+// ============================================================
+
+async function handleAuditLog(env: Env, scan: ScanRow, url: URL): Promise<Response> {
+  const token = url.searchParams.get('token');
+  const extId = url.searchParams.get('external_id') || '';
+  const isPaid = await checkToken(env, scan.id, token);
+  if (!isPaid && extId !== scan.external_id) {
+    return err(403, 'external_id mismatch');
+  }
+  const rows = await env.DB.prepare(
+    'SELECT action, actor, ip_hash, created_at FROM scan_access_log WHERE scan_id = ? ORDER BY created_at DESC LIMIT 100'
+  ).bind(scan.id).all<{ action: string; actor: string; ip_hash: string | null; created_at: number }>();
+  return json({
+    scan_id: scan.id,
+    retention_days: 30,
+    entries: (rows.results || []).map(r => ({
+      action: r.action,
+      actor: r.actor,
+      ip_hash: r.ip_hash ? r.ip_hash.slice(0, 8) + '...' : null,
+      timestamp: r.created_at,
+      time: new Date(r.created_at).toISOString(),
+    })),
+  });
+}
+
+// ============================================================
+// DELETE /api/scan/:id/delete?external_id= — self-destruct
+// ============================================================
+
+async function handleDeleteScan(req: Request, env: Env, scan: ScanRow, url: URL): Promise<Response> {
+  const token = url.searchParams.get('token');
+  const extId = url.searchParams.get('external_id') || '';
+  const isPaid = await checkToken(env, scan.id, token);
+  if (!isPaid && extId !== scan.external_id) {
+    return err(403, 'external_id mismatch — you can only delete your own scans');
+  }
+  logAccess(env, scan.id, 'delete_scan', isPaid ? 'token_holder' : 'owner', req);
+  // Wipe all related data
+  await env.DB.prepare('DELETE FROM scan_access_log WHERE scan_id = ?').bind(scan.id).run();
+  await env.DB.prepare('DELETE FROM scan_edits WHERE scan_id = ?').bind(scan.id).run();
+  await env.DB.prepare('DELETE FROM scan_results WHERE scan_id = ?').bind(scan.id).run();
+  await env.DB.prepare('DELETE FROM gideon_messages WHERE scan_id = ?').bind(scan.id).run();
+  await env.DB.prepare('DELETE FROM scan_ai_controls WHERE scan_id = ?').bind(scan.id).run();
+  await env.DB.prepare('DELETE FROM scan_ai_progress WHERE scan_id = ?').bind(scan.id).run();
+  await env.DB.prepare('DELETE FROM report_purchases WHERE scan_id = ?').bind(scan.id).run();
+  await env.DB.prepare('DELETE FROM scans WHERE id = ?').bind(scan.id).run();
+  // Wipe R2 artifacts
+  try { await env.BUCKET.delete(`reports/${scan.id}/report.html`); } catch {}
+  try { await env.BUCKET.delete(`reports/${scan.id}/package.json`); } catch {}
+  return json({ ok: true, deleted: scan.id, message: 'All scan data has been permanently deleted.' });
 }
 
 // ============================================================

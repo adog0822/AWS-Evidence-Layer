@@ -561,6 +561,26 @@ footer.foot { color: var(--muted); font-size: 12px; padding: 32px 28px; text-ali
       </div>
     </div>
 
+    <!-- Data controls (universal: free + paid) -->
+    <div id="dataControlsSection" class="hidden" style="margin-top:28px;">
+      <h3 style="margin-bottom:6px;">Your data</h3>
+      <div class="card" style="padding:18px;">
+        <div style="display:flex;align-items:flex-start;justify-content:space-between;gap:16px;flex-wrap:wrap;">
+          <div style="flex:1;min-width:240px;">
+            <div style="font-size:13px;color:var(--muted);line-height:1.6;">
+              Your scan data is stored in Cloudflare Workers infrastructure for 30 days. We never store AWS credentials. Every access to your data is logged below. You can permanently delete all scan data at any time.
+              <a href="/methodology#data" style="color:var(--accent);margin-left:4px;">Full data policy &#8594;</a>
+            </div>
+          </div>
+          <button class="btn sm" id="deleteScanBtn" style="color:var(--bad);border-color:rgba(239,68,68,.3);flex-shrink:0;">Delete all my scan data</button>
+        </div>
+        <div style="margin-top:14px;">
+          <div style="font:600 11px/1 var(--mono);letter-spacing:.08em;text-transform:uppercase;color:var(--muted);margin-bottom:8px;cursor:pointer;" id="auditLogToggle">Access log &#9658;</div>
+          <div id="auditLogBody" class="hidden" style="max-height:200px;overflow-y:auto;font:12px/1.5 var(--mono);color:var(--muted);"></div>
+        </div>
+      </div>
+    </div>
+
     <!-- Evidence catalog (free + paid) -->
     <div id="evidenceSection" class="hidden" style="margin-top:28px;">
       <h3 style="margin-bottom:6px;">Evidence catalog <span id="evCount" style="font-weight:400;color:var(--muted);font-size:13px;font-family:var(--mono);"></span></h3>
@@ -845,6 +865,7 @@ function renderReport(res, opts) {
     btn.addEventListener('click', (e) => { e.stopPropagation(); openEditMode(btn.dataset.fid, btn.dataset.field); });
   });
   STATE.isPaid = !!opts.paid;
+  showDataControls();
 }
 
 function renderControlRow(c, paid) {
@@ -1288,6 +1309,69 @@ async function sendGideon() {
 }
  $('gideonSend').addEventListener('click', sendGideon);
 $('gideonInput').addEventListener('keydown', (e) => { if (e.key === 'Enter') sendGideon(); });
+
+// ---------- Data controls (audit log + delete) ----------
+
+function showDataControls() {
+  $('dataControlsSection').classList.remove('hidden');
+  loadAuditLog();
+}
+
+async function loadAuditLog() {
+  if (!STATE.scanId) return;
+  const extId = localStorage.getItem('loxeai.external_id') || '';
+  const qs = STATE.token
+    ? 'token=' + encodeURIComponent(STATE.token)
+    : 'external_id=' + encodeURIComponent(extId);
+  try {
+    const r = await fetch('/api/scan/' + STATE.scanId + '/audit?' + qs);
+    if (!r.ok) return;
+    const d = await r.json();
+    const body = $('auditLogBody');
+    if (!d.entries || d.entries.length === 0) {
+      body.innerHTML = '<div style="color:var(--dim);padding:4px 0;">No access events recorded yet.</div>';
+      return;
+    }
+    body.innerHTML = d.entries.map(function(e) {
+      const t = new Date(e.timestamp).toLocaleString();
+      const actionLabels = { view_results: 'Viewed results', download_report: 'Downloaded report', gideon_query: 'Gideon query', delete_scan: 'Deleted scan', view_status: 'Checked status' };
+      const label = actionLabels[e.action] || e.action;
+      return '<div style="padding:3px 0;border-bottom:1px solid var(--border);display:flex;justify-content:space-between;">' +
+        '<span>' + escapeHtml(label) + ' <span style="color:var(--dim)">(' + escapeHtml(e.actor) + ')</span></span>' +
+        '<span style="color:var(--dim)">' + escapeHtml(t) + '</span>' +
+        '</div>';
+    }).join('');
+  } catch (e) {}
+}
+
+$('auditLogToggle').addEventListener('click', function() {
+  const body = $('auditLogBody');
+  const toggle = $('auditLogToggle');
+  const isHidden = body.classList.contains('hidden');
+  body.classList.toggle('hidden');
+  toggle.textContent = isHidden ? 'Access log ▾' : 'Access log ▸';
+  if (isHidden) loadAuditLog();
+});
+
+$('deleteScanBtn').addEventListener('click', async function() {
+  if (!STATE.scanId) { toast('No scan to delete', true); return; }
+  if (!confirm('Permanently delete ALL data for this scan? This cannot be undone.')) return;
+  const extId = localStorage.getItem('loxeai.external_id') || '';
+  const qs = STATE.token
+    ? 'token=' + encodeURIComponent(STATE.token)
+    : 'external_id=' + encodeURIComponent(extId);
+  try {
+    const r = await fetch('/api/scan/' + STATE.scanId + '/delete?' + qs, { method: 'DELETE' });
+    const d = await r.json();
+    if (r.ok) {
+      toast('All scan data deleted.', false);
+      localStorage.removeItem('loxeai.token.' + STATE.scanId);
+      setTimeout(function() { location.href = '/'; }, 1500);
+    } else {
+      toast(d.error || 'Delete failed', true);
+    }
+  } catch (e) { toast('Delete failed', true); }
+});
 
 // ---------- Cookie banner ----------
 (function() {
