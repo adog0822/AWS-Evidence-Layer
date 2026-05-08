@@ -31,6 +31,19 @@ Your data deletes automatically after 30 days — or instantly on request.
 
 ---
 
+## How the traceability works
+
+Every finding in the paid report is anchored to evidence like this:
+CC6.1 · 3 IAM users without MFA
+└── ev_demo_1 · iam/global/GetAccountSummary · 2026-05-07T14:22:00Z
+└── SHA-256: a3f9c2... · Raw: <AccountMFAEnabled>1</AccountMFAEnabled>
+<Users>14</Users><MFADevices>11</MFADevices>
+
+Your auditor sees the endpoint, the timestamp, the hash, and the raw response.
+The scanner is open-source — they can run the same call themselves.
+
+---
+
 ## What's in this repo
 src/
 ├── index.ts        # Cloudflare Worker entry + all API routes
@@ -52,6 +65,16 @@ The paid analysis pipeline (Anthropic prompts, report generation, Gideon,
 Stripe, auth) is not in this repo. The scanner, frontend, and control
 mapping are fully open — your auditor can verify exactly what API calls
 we make and how findings map to controls.
+
+---
+
+## Stack
+
+Cloudflare Workers · D1 (SQLite at edge) · R2 (report storage) ·
+Cloudflare Queues (parallel analysis) · Stripe Checkout · Anthropic API
+
+No VM. No container. No persistent process. Stateless by design.
+Rate limit: 5 scans / ExternalId / day.
 
 ---
 
@@ -96,7 +119,7 @@ npx wrangler deploy
 - **AI:** Anthropic Claude Sonnet 4.5
 
 Evidence collection fans out in parallel (12 concurrent) across services
-and regions. Free-tier scoring is fully deterministic — same evidence always
+and regions. Free-tier scoring is fully deterministic, same evidence always
 produces the same scores, no model involved. Paid analysis runs each control
 through Claude independently via Cloudflare Queues, 12 messages in parallel,
 assembled into a final report when all complete.
