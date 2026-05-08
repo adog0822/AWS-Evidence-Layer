@@ -4,7 +4,7 @@ Automated AWS evidence collection and control mapping for SOC 2 Type I audits.
 Read-only scan across 12 AICPA Trust Services Criteria, heuristic scoring in
 minutes, full api-traceable report unlocked at $39.99.
 
-**Live:** [pilot.loxeai.com](https://pilot.loxeai.com)
+**Live:** [loxeai.com](https://loxeai.com)
 
 ---
 
@@ -123,7 +123,7 @@ npx wrangler deploy
 - **Storage:** Cloudflare R2 (report artifacts)
 - **Queue:** Cloudflare Queues (parallel Claude analysis per control)
 - **Payments:** Stripe Checkout
-- **AI:** Anthropic Claude Sonnet 4.5
+- **AI:** Anthropic Claude Sonnet 4.6
 
 Evidence collection fans out in parallel (12 concurrent) across services
 and regions. Free-tier scoring is fully deterministic, same evidence always
@@ -139,7 +139,7 @@ Rate limit: 5 scans / ExternalId / day. 1 concurrent scan per ExternalID.
 
 Every access to your scan data is logged and visible to you on the scan page.
 You can delete all scan data instantly, one button, no email required.
-Full data policy: [pilot.loxeai.com/methodology#data](https://pilot.loxeai.com/methodology#data)
+Full data policy: [loxeai.com/methodology#data](https://loxeai.com/methodology#data)
 
 ---
 
