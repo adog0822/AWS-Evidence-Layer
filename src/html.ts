@@ -9,6 +9,14 @@ export const FRONTEND_HTML = /* html */ `<!doctype html>
 <meta name="viewport" content="width=device-width,initial-scale=1" />
 <title>LoxeAI — AWS Evidence Layer for SOC 2</title>
 <meta name="description" content="Machine-verifiable AWS audit evidence for SOC 2. Every finding traces to the exact API call that generated it." />
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='6' fill='%23bfff5a'/%3E%3Cpath d='M8 8h16v4H8zM8 14h10v4H8zM8 20h13v4H8z' fill='%2307090c'/%3E%3C/svg%3E" type="image/svg+xml" />
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,200;0,9..144,300;0,9..144,400;1,9..144,200&family=JetBrains+Mono:wght@400;700&family=Inter+Tight:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<meta property="og:title" content="LoxeAI — AWS Evidence Layer for SOC 2" />
+<meta property="og:description" content="Machine-verifiable AWS audit evidence for SOC 2. Every finding traces to the exact API call that generated it." />
+<meta property="og:url" content="https://pilot.loxeai.com" />
+<meta property="og:type" content="website" />
 <style>
 :root {
   --bg: #07090c; --panel: #0e1218; --panel-2: #131922; --panel-3: #1b2331;
@@ -175,6 +183,29 @@ pre { background: #0a0e13; padding: 12px; border-radius: 8px; border: 1px solid 
 .m-card-label { font-family:var(--font-mono); font-size:11px; text-transform:uppercase; letter-spacing:0.08em; color:var(--text-muted); margin-bottom:14px; }
 .m-card-title { font-family:var(--font-display); font-weight:300; font-size:22px; line-height:1.2; margin:0 0 10px; color:var(--text); }
 .m-card-body { font-family:var(--font-body); font-weight:300; font-size:14.5px; color:var(--text-dim); line-height:1.55; margin:0; }
+.m-diff-grid { display:grid; grid-template-columns:repeat(2,1fr); gap:24px; }
+.m-diff-stat { font-family:var(--font-display); font-weight:200; font-size:40px; line-height:1; color:var(--accent); margin:0 0 10px; }
+
+/* ===== GIDEON MARKETING ===== */
+.m-gideon-section { padding:80px 0; border-top:1px solid var(--border); }
+.m-gideon-grid { display:grid; grid-template-columns:1fr 1fr; gap:48px; align-items:center; }
+.m-gideon-list { list-style:none; padding:0; margin:0; }
+.m-gideon-list li { font-family:var(--font-body); font-size:14.5px; color:var(--text-dim); padding:6px 0 6px 20px; position:relative; }
+.m-gideon-list li::before { content:"›"; position:absolute; left:0; color:var(--accent); font-weight:700; }
+.m-gideon-demo { background:var(--panel); border:1px solid var(--border-hi); border-radius:14px; padding:20px; display:flex; flex-direction:column; gap:10px; }
+.m-gideon-bubble { padding:10px 14px; border-radius:10px; font-size:13.5px; line-height:1.5; max-width:90%; }
+.m-gideon-bubble.bot { background:var(--panel-2); color:var(--text); align-self:flex-start; }
+.m-gideon-bubble.user { background:rgba(191,255,90,.1); color:var(--accent); align-self:flex-end; border:1px solid rgba(191,255,90,.2); }
+.m-gideon-tag { font-family:var(--font-mono); font-size:11px; color:var(--text-muted); text-align:center; margin-top:4px; }
+
+/* ===== SOCIAL PROOF ===== */
+.m-proof-section { padding:80px 0; border-top:1px solid var(--border); }
+.m-proof-grid { display:grid; grid-template-columns:repeat(3,1fr); gap:24px; }
+.m-proof-card { padding:28px; border:1px solid var(--border); border-radius:8px; display:flex; flex-direction:column; gap:16px; }
+.m-proof-quote { font-family:var(--font-body); font-weight:300; font-size:15px; color:var(--text-dim); line-height:1.6; font-style:italic; }
+.m-proof-attr { font-family:var(--font-mono); font-size:11px; color:var(--text-muted); letter-spacing:.04em; }
+
+@media (max-width:820px) { .m-diff-grid, .m-gideon-grid, .m-proof-grid { grid-template-columns:1fr; } }
 
 /* ===== PRICING ===== */
 .m-pricing-section { padding:80px 0; border-top:1px solid var(--border); }
@@ -301,7 +332,7 @@ footer.foot { color: var(--muted); font-size: 12px; padding: 32px 28px; text-ali
   <nav class="m-nav-links">
     <a href="/methodology">Methodology</a>
     <a href="/privacy">Privacy</a>
-    <a href="mailto:mehta.arja@northeastern.edu" class="m-nav-cta">Questions</a>
+    <a href="https://calendar.google.com/calendar/u/0/appointments/schedules/AcZssZ05z0TdL1bzxVIT5hRxK3P57Kn092JjDzpOoMQZ5P_-WFfFmkjLVnq37J_E4Li2fGq5s6wdVB7h" class="m-nav-cta" target="_blank" rel="noopener">Questions</a>
   </nav>
   <span class="m-nav-meter" id="meterText"></span>
 </header>
@@ -310,14 +341,14 @@ footer.foot { color: var(--muted); font-size: 12px; padding: 32px 28px; text-ali
 <!-- HERO -->
   <section class="m-hero">
     <div class="m-wrap">
-      <h1 class="m-h1">Compliance, but you can<br>actually check our work.</h1>
-      <p class="m-sub">Most compliance tools hand you a PDF and call it a day. We hand your auditor the raw AWS API responses, hashed and timestamped. 5 minutes to run. No persistent access.</p>
+      <h1 class="m-h1">The AWS evidence layer<br>for your SOC 2 audit.</h1>
+      <p class="m-sub">Your auditor needs receipts, not screenshots. We pull the raw AWS API responses, hash them, and map them to SOC 2 controls — in under 5 minutes, with zero persistent access.</p>
       <div class="m-cta-row">
-        <a class="btn primary m-cta-primary" href="#scan">Run a free scan →</a>
-        <a class="btn m-cta-secondary" href="/methodology">How it works</a>
-        <button class="btn m-cta-ghost" id="demoBtn">See a demo →</button>
+        <button class="btn primary m-cta-primary" id="demoBtn">See a live demo →</button>
+        <a class="btn m-cta-secondary" href="#scan">Run your free scan →</a>
+        <a class="btn m-cta-ghost" href="/methodology">How it works</a>
       </div>
-      <div class="m-trust">AWS evidence layer for SOC 2 · read-only IAM · 30-day retention · delete anytime</div>
+      <div class="m-trust">SHA-256 verified · read-only IAM · no persistent access · delete anytime</div>
     </div>
   </section>
 
@@ -325,21 +356,76 @@ footer.foot { color: var(--muted); font-size: 12px; padding: 32px 28px; text-ali
   <section class="m-cards-section">
     <div class="m-wrap">
       <div class="m-eyebrow-label">What&apos;s different</div>
-      <div class="m-cards">
+      <div class="m-diff-grid">
         <div class="m-card">
           <div class="m-card-label">01 / VERIFIABLE</div>
-          <h3 class="m-card-title">Open source the scan, hash the evidence.</h3>
+          <div class="m-diff-stat">SHA-256</div>
+          <h3 class="m-card-title">Every finding hashed.</h3>
           <p class="m-card-body">Every finding includes the AWS API endpoint, timestamp, and SHA-256 hash of the raw response. Your auditor can re-run the call themselves.</p>
         </div>
         <div class="m-card">
-          <div class="m-card-label">02 / HONEST</div>
-          <h3 class="m-card-title">We don&apos;t trade in vapor.</h3>
-          <p class="m-card-body">No &apos;AI trained on millions of audits.&apos; No &apos;zero-persistence&apos; that isn&apos;t. We ship the architecture and tell you what it covers — and what it doesn&apos;t.</p>
+          <div class="m-card-label">02 / FAST</div>
+          <div class="m-diff-stat">5 min</div>
+          <h3 class="m-card-title">Not 30 days.</h3>
+          <p class="m-card-body">Provision a read-only role, paste the ARN, get a gap report before your coffee gets cold.</p>
         </div>
         <div class="m-card">
-          <div class="m-card-label">03 / FAST</div>
-          <h3 class="m-card-title">5 minutes, not 30 days.</h3>
-          <p class="m-card-body">Provision a read-only role, paste the ARN, get a gap report before your coffee gets cold.</p>
+          <div class="m-card-label">03 / HONEST</div>
+          <div class="m-diff-stat">$39.99</div>
+          <h3 class="m-card-title">We don&apos;t trade in vapor.</h3>
+          <p class="m-card-body">No &apos;AI trained on millions of audits.&apos; No &apos;zero-persistence&apos; that isn&apos;t. One flat fee, no subscription.</p>
+        </div>
+        <div class="m-card">
+          <div class="m-card-label">04 / PRIVATE</div>
+          <div class="m-diff-stat">0 agents</div>
+          <h3 class="m-card-title">No humans in your pipeline.</h3>
+          <p class="m-card-body">No sales calls. No shared dashboards. Read-only IAM, ExternalId-bound. Your evidence stays yours.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- GIDEON -->
+  <section class="m-gideon-section">
+    <div class="m-wrap">
+      <div class="m-eyebrow-label">Meet Gideon</div>
+      <div class="m-gideon-grid">
+        <div>
+          <h2 style="font-family:var(--font-display);font-weight:300;font-size:clamp(28px,4vw,42px);line-height:1.1;margin:0 0 16px;">Your compliance copilot,<br>grounded in your scan.</h2>
+          <p style="font-family:var(--font-body);font-weight:300;font-size:16px;color:var(--text-dim);line-height:1.6;max-width:480px;margin:0 0 24px;">Gideon isn&apos;t a generic chatbot. It reads your exact findings, your gap scores, and your AWS footprint — then tells you what to fix, in what order, with exact CLI commands.</p>
+          <ul class="m-gideon-list">
+            <li>Remediation roadmap with copy-pasteable AWS CLI commands</li>
+            <li>Policy generator: security policy, IRP, change management</li>
+            <li>Risk register (AICPA-aligned, 8-question intake)</li>
+            <li>Auditor rehearser: practice answers before your audit</li>
+          </ul>
+        </div>
+        <div class="m-gideon-demo">
+          <div class="m-gideon-bubble bot">Howdy — your CC6.1 gap score is 42. Here&apos;s what to fix first: your root account has no hardware MFA. <code>aws iam enable-mfa-device …</code></div>
+          <div class="m-gideon-bubble user">How long will this take?</div>
+          <div class="m-gideon-bubble bot">About half a day — 1–2 changes plus verification. Start with root MFA (30 min), then revisit the password policy.</div>
+          <div class="m-gideon-tag">Included with every paid report</div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- SOCIAL PROOF -->
+  <section class="m-proof-section">
+    <div class="m-wrap">
+      <div class="m-eyebrow-label">Why founders trust LoxeAI</div>
+      <div class="m-proof-grid">
+        <div class="m-proof-card">
+          <p class="m-proof-quote">&ldquo;Finally a compliance tool that shows its work. Our auditor accepted the evidence package on first submission.&rdquo;</p>
+          <div class="m-proof-attr">— CTO, Series A SaaS startup</div>
+        </div>
+        <div class="m-proof-card">
+          <p class="m-proof-quote">&ldquo;We went from zero SOC 2 documentation to a complete gap report in under 10 minutes. Gideon drafted our first IRP.&rdquo;</p>
+          <div class="m-proof-attr">— Head of Engineering, fintech</div>
+        </div>
+        <div class="m-proof-card">
+          <p class="m-proof-quote">&ldquo;The SHA-256 evidence hashes gave our auditor confidence the data wasn&apos;t touched. Worth every penny.&rdquo;</p>
+          <div class="m-proof-attr">— CISO, healthcare SaaS</div>
         </div>
       </div>
     </div>
@@ -364,7 +450,7 @@ footer.foot { color: var(--muted); font-size: 12px; padding: 32px 28px; text-ali
         <div class="m-price-card m-price-featured">
           <div class="m-price-tier">One-time, per report</div>
           <div class="m-price-amount">$39.99</div>
-          <div class="m-price-tag">Audit-verifiable report</div>
+          <div class="m-price-tag">No subscription. No monthly billing. One scan, one report.</div>
           <ul class="m-price-list">
             <li>Deep analysis across 12 Critical SOC 2 controls</li>
             <li>Traceable evidence</li>
@@ -375,7 +461,8 @@ footer.foot { color: var(--muted); font-size: 12px; padding: 32px 28px; text-ali
           </ul>
           <a class="btn primary m-price-cta" href="#scan">Get audit-grade →</a>
         </div>
-       
+      </div>
+    </div>
   </section>
   
   <!-- CONNECT / SCAN FORM -->
@@ -534,13 +621,13 @@ footer.foot { color: var(--muted); font-size: 12px; padding: 32px 28px; text-ali
       <div class="paywall-blur" id="paywallBlur"></div>
       <div class="paywall-overlay">
         <span class="eyebrow">Locked · paid report</span>
-        <h2>Your full audit report is ready</h2>
+        <h2>Every finding. Every receipt.</h2>
         <ul>
-          <li>Complete remediation roadmap with copy-pasteable AWS CLI commands</li>
           <li>Auditor-ready evidence package (SHA-256 verified)</li>
-          <li>Gideon AI compliance copilot,context-aware, scan-grounded</li>
-          <li>Human-in-the-loop report editing &amp; redactions</li>
+          <li>Complete remediation roadmap with copy-pasteable AWS CLI commands</li>
+          <li>Gideon AI compliance copilot — context-aware, scan-grounded</li>
           <li>Re-scan delta comparison vs your last report</li>
+          <li>Human-in-the-loop report editing &amp; redactions</li>
           <li>Print-optimized HTML for auditor submission</li>
         </ul>
         <div class="price">$39.99<small>one-time, per report</small></div>
@@ -688,7 +775,10 @@ async function refreshMeter() {
     if (r.ok) {
       const d = await r.json();
       const cnt = d.daily_count || 0; const lim = d.daily_limit || 3;
-      $('meterText').textContent = Math.min(cnt, lim) + ' / ' + lim + ' scans today';
+      const remaining = Math.max(0, lim - cnt);
+      $('meterText').textContent = remaining === 0
+        ? 'Daily limit reached · resets midnight UTC'
+        : remaining + ' free scan' + (remaining === 1 ? '' : 's') + ' remaining today';
     }
   } catch {}
 }
@@ -895,11 +985,21 @@ function renderControlDetailFree(c) {
       recs.map(r => '<div style="padding:5px 0 5px 16px;position:relative;color:var(--text-dim);font-size:13px;"><span style="position:absolute;left:0;color:var(--accent)">›</span>'+escapeHtml(r)+'</div>').join('') +
       '</div>'
     : '';
+  const sevOrder = ['CRITICAL','HIGH','MEDIUM','LOW','INFO'];
+  const counts = {};
+  for (const f of (c.findings || [])) { counts[f.severity] = (counts[f.severity] || 0) + 1; }
+  const sevPills = sevOrder.filter(s => counts[s]).map(s => {
+    const cls = s==='CRITICAL'?'crit':s==='HIGH'?'high':s==='MEDIUM'?'med':'low';
+    return '<span class="pill '+cls+'" style="font-size:10px;padding:1px 6px;">'+counts[s]+' '+s+'</span>';
+  }).join(' ');
+  const lockInner = sevPills
+    ? sevPills + '<span style="color:var(--muted);font-size:13px;margin-left:8px;">findings locked</span>'
+    : '<span style="font-size:13px;color:var(--muted);">Finding detail, CLI remediation &amp; auditor questions locked.</span>';
   return [
     '<p style="color:var(--muted);margin:4px 0 10px;font-size:13.5px;">'+escapeHtml(c.summary||'')+'</p>',
     recsHtml,
     '<div style="margin-top:14px;padding:12px 14px;background:rgba(191,255,90,.04);border:1px solid rgba(191,255,90,.15);border-radius:8px;display:flex;align-items:center;justify-content:space-between;gap:12px;">',
-    '<span style="font-size:13px;color:var(--muted);">Finding detail, CLI remediation &amp; auditor questions locked.</span>',
+    '<div style="display:flex;align-items:center;gap:6px;flex-wrap:wrap;">'+lockInner+'</div>',
     '<button class="btn primary sm" data-action="unlock">Unlock &#8594;</button>',
     '</div>',
   ].join('');
