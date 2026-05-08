@@ -18,7 +18,7 @@ minutes, full api-traceable report unlocked at $39.99.
    for your auditor
 
  No persistent access. Read-only ExternalId-bound role.
-Your data deletes automatically after 30 days — or instantly on request.
+Your data deletes automatically after 30 days, or instantly on request.
 
 ---
 
@@ -43,7 +43,7 @@ CC6.1 · 3 IAM users without MFA
 ```
 
 Your auditor sees the endpoint, the timestamp, the hash, and the raw response.
-The scanner is open-source — they can run the same call themselves.
+The scanner is open-source, they can run the same call themselves.
 
 ---
 
@@ -70,7 +70,7 @@ migrations/
 
 The paid analysis pipeline (Anthropic prompts, report generation, Gideon,
 Stripe, auth) is not in this repo. The scanner, frontend, and control
-mapping are fully open — your auditor can verify exactly what API calls
+mapping are fully open, your auditor can verify exactly what API calls
 we make and how findings map to controls.
 
 ---
@@ -131,14 +131,14 @@ produces the same scores, no model involved. Paid analysis runs each control
 through Claude independently via Cloudflare Queues, 12 messages in parallel,
 assembled into a final report when all complete.
 
-Rate limit: 5 scans / ExternalId / day. 1 concurrent scan per ExternalId.
+Rate limit: 5 scans / ExternalId / day. 1 concurrent scan per ExternalID.
 
 ---
 
 ## Data & privacy
 
 Every access to your scan data is logged and visible to you on the scan page.
-You can delete all scan data instantly — one button, no email required.
+You can delete all scan data instantly, one button, no email required.
 Full data policy: [pilot.loxeai.com/methodology#data](https://pilot.loxeai.com/methodology#data)
 
 ---
