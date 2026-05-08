@@ -24,10 +24,10 @@ Your data deletes automatically after 30 days — or instantly on request.
 
 ## Two-tier flow
 
-| Stage | What runs | Time |
+| Stage | What happens | Time |
 |---|---|---|
-| Free | Evidence collection + heuristic scoring | 3–5 min |
-| Paid | Claude Sonnet 4.6 analysis × 12 controls + Gideon copilot (helps with risk assesment, remediation tracking, other parts of the SOC 2 Type l process) | ~2–5 min after payment |
+| Free | Evidence collected across 15 services × 6 regions. 12 controls scored heuristically. Gap chart, evidence catalog, CSV export. | 3–5 min |
+| Paid ($39.99) | Per-control analysis with finding-level detail, CLI remediation commands, traceable evidence, Gideon copilot, HTML report for your auditor. | ~2–5 min after payment |
 
 ---
 
