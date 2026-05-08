@@ -26,8 +26,8 @@ Your data deletes automatically after 30 days — or instantly on request.
 
 | Stage | What runs | Time |
 |---|---|---|
-| Free | Evidence collection + heuristic scoring (no Claude) | 3–5 min |
-| Paid | Claude Sonnet 4.5 analysis × 12 controls + Gideon copilot | ~2–5 min after payment |
+| Free | Evidence collection + heuristic scoring | 3–5 min |
+| Paid | Claude Sonnet 4.6 analysis × 12 controls + Gideon copilot (helps with risk assesment, remediation tracking, other parts of the SOC 2 Type l process) | ~2–5 min after payment |
 
 ---
 
