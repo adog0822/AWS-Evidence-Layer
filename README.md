@@ -2,7 +2,7 @@
 
 Automated AWS evidence collection and control mapping for SOC 2 Type I audits.
 Read-only scan across 12 AICPA Trust Services Criteria, heuristic scoring in
-minutes, full Claude analysis unlocked at $39.99.
+minutes, full api-traceable report unlocked at $39.99.
 
 **Live:** [pilot.loxeai.com](https://pilot.loxeai.com)
 
