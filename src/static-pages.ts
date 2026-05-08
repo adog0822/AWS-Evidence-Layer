@@ -215,7 +215,7 @@ ${PAGE_NAV}
     <p>This is a Type I tool. Continuous monitoring (Type II evidence collection over time) is on the roadmap, not shipped.</p>
   </div>
 
-  <div class="sp-cta">Questions, corrections, or methodology challenges — <a href="mailto:arjav@loxeai.com">talk to the founder directly</a>.
+  <div class="sp-cta">Questions, corrections, or methodology challenges — <a href="https://calendar.google.com/calendar/u/0/appointments/schedules/AcZssZ05z0TdL1bzxVIT5hRxK3P57Kn092JjDzpOoMQZ5P_-WFfFmkjLVnq37J_E4Li2fGq5s6wdVB7h">talk to the founder directly</a>.
   </div>
 </main>
 ${PAGE_FOOT}`;
@@ -267,7 +267,7 @@ ${PAGE_NAV}
         <tr><td>Payment records</td><td>As required by Stripe and tax regulations (typically 7 years)</td></tr>
       </tbody>
     </table>
-    <p>You can request deletion before the 30-day window by emailing arjav@loxeai.com with your scan ID.</p>
+    <p>You can request deletion before the 30-day window by emailing mehta.arja@northeastern.edu with your scan ID.</p>
   </div>
 
   <div class="sp-section" id="never">
@@ -302,7 +302,7 @@ ${PAGE_NAV}
 
   <div class="sp-section" id="contact">
     <h2><span class="sp-num">07</span>Contact</h2>
-    <p>Questions, deletion requests, or anything unclear: <a href="mailto:arjav@loxeai.com">arjav@loxeai.com</a>. Response within 48 hours on weekdays.</p>
+    <p>Questions, deletion requests, or anything unclear: <a href="https://calendar.google.com/calendar/u/0/appointments/schedules/AcZssZ05z0TdL1bzxVIT5hRxK3P57Kn092JjDzpOoMQZ5P_-WFfFmkjLVnq37J_E4Li2fGq5s6wdVB7h">Book a meeting</a>. Response within 48 hours on weekdays.</p>
   </div>
 
   <div class="sp-cta">Read the <a href="/methodology">methodology</a> for how evidence collection works and what we access.</div>
@@ -346,7 +346,7 @@ ${PAGE_NAV}
     <p>Block cookies entirely in your browser — everything works except the banner preference won't persist.</p>
   </div>
 
-  <div class="sp-cta">Questions: <a href="mailto:arjav@loxeai.com">arjav@loxeai.com</a></div>
+  <div class="sp-cta">Questions: <a href="https://calendar.google.com/calendar/u/0/appointments/schedules/AcZssZ05z0TdL1bzxVIT5hRxK3P57Kn092JjDzpOoMQZ5P_-WFfFmkjLVnq37J_E4Li2fGq5s6wdVB7h">Book a meeting</a></div>
 </main>
 ${PAGE_FOOT}`;
 }
