@@ -86,6 +86,7 @@ ${PAGE_NAV}
     <li><a href="#scoring">05 — Scoring</a></li>
     <li><a href="#traceability">06 — Traceability</a></li>
     <li><a href="#honesty">07 — Honesty note</a></li>
+    <li><a href="#data">08 — Your data &amp; deletion</a></li>
   </ul>
 
   <div class="sp-section" id="arch">
@@ -215,6 +216,27 @@ ${PAGE_NAV}
     <p>This is a Type I tool. Continuous monitoring (Type II evidence collection over time) is on the roadmap, not shipped.</p>
   </div>
 
+  <div class="sp-section" id="data">
+    <h2><span class="sp-num">08</span>Your data &amp; deletion</h2>
+    <p>Here is exactly what we store, where, and for how long — no buried clauses.</p>
+    <table class="sp-retention-table">
+      <thead><tr><th>What</th><th>Where</th><th>How long</th></tr></thead>
+      <tbody>
+        <tr><td>AWS API responses (evidence)</td><td>Cloudflare D1</td><td>30 days, then auto-deleted</td></tr>
+        <tr><td>Gap scores &amp; control analysis</td><td>Cloudflare D1</td><td>30 days, then auto-deleted</td></tr>
+        <tr><td>Generated report (HTML + JSON)</td><td>Cloudflare R2</td><td>30 days, then auto-deleted</td></tr>
+        <tr><td>Finding edits &amp; resolved marks</td><td>Cloudflare D1</td><td>30 days, deleted with scan</td></tr>
+        <tr><td>Data access log</td><td>Cloudflare D1</td><td>30 days, deleted with scan</td></tr>
+        <tr><td>Payment records</td><td>Stripe</td><td>As required by law (~7 years)</td></tr>
+      </tbody>
+    </table>
+    <p><strong>What we never store:</strong> AWS credentials, secret values, application data, customer data, code, or anything your application stores about your users. The IAM role sessions are 1-hour TTL and never persisted after the scan completes.</p>
+    <p><strong>Delete anytime.</strong> Every scan page has a "Delete all my scan data" button. One click wipes all D1 rows and R2 objects for that scan immediately — evidence, report, edits, access log, everything. No email required. Payment records remain with Stripe as required by law but contain no scan data.</p>
+    <p><strong>Access log.</strong> Every time your scan data is accessed — by you or anyone with your token — it is recorded and visible to you on the scan page under "Access log." You can see every download, every Gideon query, every results view. Nothing happens to your data without it appearing there.</p>
+    <p><strong>What we share:</strong> Stripe processes payments. Anthropic's Claude API analyzes your evidence for the paid report. Neither receives your AWS account ID or org name. That's the complete list of third parties.</p>
+    <p>If you want deletion before the 30-day window and can't access the scan page, email <a href="mailto:mehta.arja@northeastern.edu">mehta.arja@northeastern.edu</a> with your scan ID.</p>
+  </div>
+
   <div class="sp-cta">Questions, corrections, or methodology challenges — <a href="https://calendar.google.com/calendar/u/0/appointments/schedules/AcZssZ05z0TdL1bzxVIT5hRxK3P57Kn092JjDzpOoMQZ5P_-WFfFmkjLVnq37J_E4Li2fGq5s6wdVB7h">talk to the founder directly</a>.
   </div>
 </main>
@@ -267,7 +289,7 @@ ${PAGE_NAV}
         <tr><td>Payment records</td><td>As required by Stripe and tax regulations (typically 7 years)</td></tr>
       </tbody>
     </table>
-    <p>You can request deletion before the 30-day window by emailing mehta.arja@northeastern.edu with your scan ID.</p>
+    <p>You can delete your scan data instantly using the "Delete all my scan data" button on your scan page. No email required. If you've lost access to the scan page, email <a href="mailto:mehta.arja@northeastern.edu">mehta.arja@northeastern.edu</a> with your scan ID.</p>
   </div>
 
   <div class="sp-section" id="never">
