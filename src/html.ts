@@ -413,19 +413,19 @@ footer.foot { color: var(--muted); font-size: 12px; padding: 32px 28px; text-ali
   <!-- SOCIAL PROOF -->
   <section class="m-proof-section">
     <div class="m-wrap">
-      <div class="m-eyebrow-label">Why founders trust LoxeAI</div>
+      <div class="m-eyebrow-label">What the market is saying</div>
       <div class="m-proof-grid">
         <div class="m-proof-card">
-          <p class="m-proof-quote">&ldquo;Finally a compliance tool that shows its work. Our auditor accepted the evidence package on first submission.&rdquo;</p>
-          <div class="m-proof-attr">— CTO, Series A SaaS startup</div>
+          <p class="m-proof-quote">&ldquo;The control is actually working — you just can&apos;t prove it six months later because the proof was in a screenshot someone saved to a folder nobody remembers.&rdquo;</p>
+          <div class="m-proof-attr">— Anonymous SaaS founder &middot; r/soc2</div>
         </div>
         <div class="m-proof-card">
-          <p class="m-proof-quote">&ldquo;We went from zero SOC 2 documentation to a complete gap report in under 10 minutes. Gideon drafted our first IRP.&rdquo;</p>
-          <div class="m-proof-attr">— Head of Engineering, fintech</div>
+          <p class="m-proof-quote">&ldquo;Evidence collection is a problem even with tools that can be ridiculously expensive. Used Drata, wasn&apos;t that good. Used Vanta — not that much automation.&rdquo;</p>
+          <div class="m-proof-attr">— Anonymous CISO &middot; enterprise fintech &middot; customer discovery</div>
         </div>
         <div class="m-proof-card">
-          <p class="m-proof-quote">&ldquo;The SHA-256 evidence hashes gave our auditor confidence the data wasn&apos;t touched. Worth every penny.&rdquo;</p>
-          <div class="m-proof-attr">— CISO, healthcare SaaS</div>
+          <p class="m-proof-quote">&ldquo;The SHA-256 traceability angle is genuinely smart. Tamper-evident, API-sourced evidence is something auditors will respect.&rdquo;</p>
+          <div class="m-proof-attr">— Anonymous security founder &middot; customer discovery</div>
         </div>
       </div>
     </div>
