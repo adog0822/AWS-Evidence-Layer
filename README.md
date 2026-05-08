@@ -49,7 +49,7 @@ The scanner is open-source — they can run the same call themselves.
 
 ## What's in this repo
 
-` ` `
+ ```
 src/
 ├── index.ts        # Cloudflare Worker entry + all API routes
 ├── html.ts         # Single-file frontend (dark, monospace-accented)
@@ -66,7 +66,7 @@ migrations/
 ├── 0001_initial.sql       # Core schema
 ├── 0002_queues_gideon.sql # Queue + Gideon conversation tables
 └── 0003_access_log.sql    # Data access audit log
-` ` `
+```
 
 The paid analysis pipeline (Anthropic prompts, report generation, Gideon,
 Stripe, auth) is not in this repo. The scanner, frontend, and control
