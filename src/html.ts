@@ -7,8 +7,8 @@ export const FRONTEND_HTML = /* html */ `<!doctype html>
 <head>
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width,initial-scale=1" />
-<title>LoxeAI — SOC 2 Evidence Tracer (Pilot)</title>
-<meta name="description" content="Audit-grade SOC 2 readiness in minutes. Read-only AWS scan, 12 controls analyzed, $29.99 report." />
+<title>LoxeAI — AWS Evidence Layer for SOC 2</title>
+<meta name="description" content="Machine-verifiable AWS audit evidence for SOC 2. Every finding traces to the exact API call that generated it." />
 <style>
 :root {
   --bg: #07090c; --panel: #0e1218; --panel-2: #131922; --panel-3: #1b2331;
@@ -317,7 +317,7 @@ footer.foot { color: var(--muted); font-size: 12px; padding: 32px 28px; text-ali
         <a class="btn m-cta-secondary" href="/methodology">How it works</a>
         <button class="btn m-cta-ghost" id="demoBtn">See a demo →</button>
       </div>
-      <div class="m-trust">Cloudflare Workers · read-only IAM · 30-day retention · no agents</div>
+      <div class="m-trust">AWS evidence layer for SOC 2 · read-only IAM · 30-day retention · delete anytime</div>
     </div>
   </section>
 
@@ -428,7 +428,7 @@ footer.foot { color: var(--muted); font-size: 12px; padding: 32px 28px; text-ali
           <li>WAF Web ACLs &amp; protected resources</li>
           <li>Lambda, RDS, SNS, CloudWatch</li>
         </ul>
-        <p style="color:var(--muted); font-size:12px; font-family: var(--mono);">Read-only · ExternalId-bound · Zero secret material accessed</p>
+        <p style="color:var(--muted); font-size:12px; font-family: var(--mono);">Read-only · ExternalId-bound · Zero secret material accessed · <a href="/methodology#data" style="color:var(--muted);text-decoration:underline;">What we store</a></p>
       </div>
     </div>
   </section>
@@ -545,7 +545,7 @@ footer.foot { color: var(--muted); font-size: 12px; padding: 32px 28px; text-ali
         </ul>
         <div class="price">$29.99<small>one-time, per report</small></div>
         <button class="btn primary cta" id="buyBtn">Unlock full report →</button>
-        <div class="footnote">Stripe Checkout · Test mode for pilot</div>
+        <div class="footnote">Stripe Checkout · Secured by Stripe</div>
       </div>
     </div>
 
