@@ -2,7 +2,7 @@
 
 Automated AWS evidence collection and control mapping for SOC 2 Type I audits.
 Read-only scan across 12 AICPA Trust Services Criteria, heuristic scoring in
-minutes, full api-traceable report unlocked at $39.99.
+minutes, full api-traceable report unlocked with paid report.
 
 **Live:** [loxeai.com](https://loxeai.com)
 
@@ -13,7 +13,7 @@ minutes, full api-traceable report unlocked at $39.99.
 1. You deploy a read-only IAM role via CloudFormation (one click, ~2 min)
 2. Paste the Role ARN, we scan 15 AWS services across 6 regions & map to 12 Core SOC 2 Controls.
 3. Free gap report in under 5 minutes: 12 controls scored, evidence catalog, gap chart
-4. Pay $39.99 to unlock: Finding-level detail, CLI remediation
+4. $39.99 to unlock: Finding-level detail, CLI remediation
    commands, Gideon compliance copilot (helps with risk assesment, polciy writing, remediation, other aspects of Type l audit), SHA-256 traceable evidence, HTML report for your auditor.
 
  No persistent access. Read-only ExternalId-bound role.
