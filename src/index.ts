@@ -734,7 +734,7 @@ async function handleAdminStats(req: Request, env: Env): Promise<Response> {
     revenue: {
       paid_reports: paidReports?.n ?? 0,
       conversion_pct: conversionPct + '%',
-      estimated_revenue_usd: ((paidReports?.n ?? 0) * 39.99).toFixed(2),
+      estimated_revenue_usd: ((paidReports?.n ?? 0) * 99.00).toFixed(2),
     },
     recent: recentScans.results,
   });
