@@ -13,7 +13,7 @@ minutes, full api-traceable report unlocked with paid report.
 1. You deploy a read-only IAM role via CloudFormation (one click, ~2 min)
 2. Paste the Role ARN, we scan 15 AWS services across 6 regions & map to 12 Core SOC 2 Controls.
 3. Free gap report in under 5 minutes: 12 controls scored, evidence catalog, gap chart
-4. $39.99 to unlock: Finding-level detail, CLI remediation
+4. $99.00 to unlock: Finding-level detail, CLI remediation
    commands, Gideon compliance copilot (helps with risk assesment, policy writing, remediation, other aspects of Type l audit), SHA-256 traceable evidence, HTML report for your auditor.
 
  No persistent access. Read-only ExternalId-bound role.
@@ -26,7 +26,7 @@ Your data deletes automatically after 30 days, or instantly on request.
 | Stage | What happens | Time |
 |---|---|---|
 | Free | Evidence collected across 15 services × 6 regions. 12 controls scored heuristically. Gap chart, evidence catalog, CSV export. | 3–5 min |
-| Paid ($39.99) | Per-control analysis with finding-level detail, CLI remediation commands, traceable evidence, Gideon copilot, HTML report for your auditor. | ~2–5 min after payment |
+| Paid ($99.00) | Per-control analysis with finding-level detail, CLI remediation commands, traceable evidence, Gideon copilot, HTML report for your auditor. | ~2–5 min after payment |
 
 ---
 
