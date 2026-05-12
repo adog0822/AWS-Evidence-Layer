@@ -372,7 +372,7 @@ footer.foot { color: var(--muted); font-size: 12px; padding: 32px 28px; text-ali
         </div>
         <div class="m-card">
           <div class="m-card-label">03 / HONEST</div>
-          <div class="m-diff-stat">$39.99</div>
+          <div class="m-diff-stat">$99.00</div>
           <h3 class="m-card-title">We don&apos;t trade in vapor.</h3>
           <p class="m-card-body">No &apos;AI trained on millions of audits.&apos; No &apos;zero-persistence&apos; that isn&apos;t. One flat fee, no subscription.</p>
         </div>
@@ -450,7 +450,7 @@ footer.foot { color: var(--muted); font-size: 12px; padding: 32px 28px; text-ali
         </div>
         <div class="m-price-card m-price-featured">
           <div class="m-price-tier">One-time, per report</div>
-          <div class="m-price-amount">$39.99</div>
+          <div class="m-price-amount">$99.00</div>
           <div class="m-price-tag">No subscription. No monthly billing. One scan, one report.</div>
           <ul class="m-price-list">
             <li>Deep analysis across 12 Critical SOC 2 controls</li>
@@ -631,7 +631,7 @@ footer.foot { color: var(--muted); font-size: 12px; padding: 32px 28px; text-ali
           <li>Human-in-the-loop report editing &amp; redactions</li>
           <li>Print-optimized HTML for auditor submission</li>
         </ul>
-        <div class="price">$39.99<small>one-time, per report</small></div>
+        <div class="price">$99.00<small>one-time, per report</small></div>
         <button class="btn primary cta" id="buyBtn">Unlock full report →</button>
         <div class="footnote">Stripe Checkout · Secured by Stripe</div>
       </div>
