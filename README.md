@@ -1,6 +1,6 @@
-# LoxeAI, AWS Trust Infrastructure for SOC 2
+# LoxeAI, A Customizable, Verifiable, & Faster Compliance Agent for first SOC 2 audit
 
-Automated AWS evidence collection and control mapping for SOC 2 Type I audits.
+Your first SOC 2, Done your Way
 Read-only scan across 12 AICPA Trust Services Criteria, heuristic scoring in
 minutes, full api-traceable report unlocked with paid report.
 
@@ -12,21 +12,46 @@ minutes, full api-traceable report unlocked with paid report.
 
 1. You deploy a read-only IAM role via CloudFormation (one click, ~2 min)
 2. Paste the Role ARN, we scan 15 AWS services across 6 regions & map to 12 Core SOC 2 Controls.
-3. Free gap report in under 5 minutes: 12 controls scored, evidence catalog, gap chart
-4. $99.00 to unlock: Finding-level detail, CLI remediation
-   commands, Gideon compliance copilot (helps with risk assesment, policy writing, remediation, other aspects of Type l audit), SHA-256 traceable evidence, HTML report for your auditor.
+3. Free gap report in minutes: 12 controls scored, evidence catalog, gap chart
+
+**LoxeAI Full platform (Design Partner) ($349):**
+Everything in the free tier, plus a full compliance workspace built 
+around your specific AWS environment:
+- SHA-256 signed, API-traceable evidence your auditor can verify 
+  independently
+- Custom controls builder: describe a check in plain English, Gideon 
+  drafts it, deterministic code evaluates it
+- Gideon compliance co-pilot: trained on your data, your scan findings, 
+  your specific environment — drafts policies, walks through HR controls, 
+  handles vendor risk assessments, prepares remediation steps
+- Org-scoped workspace with full RBAC (Owner / Admin / Engineer / 
+  Auditor / Viewer)
+- Pre-audit readiness report: standalone, exportable, independently 
+  verifiable without platform access
+- Remediation queue with delta tracking across scans
+- Multi-account support
 
  No persistent access. Read-only ExternalId-bound role.
 Your data deletes automatically after 30 days, or instantly on request.
 
+<img width="1512" height="791" alt="image" src="https://github.com/user-attachments/assets/1decbdc9-f850-4645-8d0a-1981288df963" />
+
+
 ---
 
-## Two-tier flow
+## Two-tier architecture
 
-| Stage | What happens | Time |
+| | Free (Open-Source) | Design Partner ($349) |
 |---|---|---|
-| Free | Evidence collected across 15 services × 6 regions. 12 controls scored heuristically. Gap chart, evidence catalog, CSV export. | 3–5 min |
-| Paid ($99.00) | Per-control analysis with finding-level detail, CLI remediation commands, traceable evidence, Gideon copilot, HTML report for your auditor. | ~2–5 min after payment |
+| AWS services | 15+ | 40+ (ECS, EKS, RDS, SQS, and more) |
+| Controls | 12 core SOC 2 | 12 built-in + custom controls |
+| Evidence traceability | SHA-256 hash per finding | SHA-256 + API trace + auditor-ready report |
+| Custom controls | — | Plain English, deterministic evaluation |
+| Compliance co-pilot | — | Gideon, trained on your data |
+| Storage | Cloudflare D1 / R2 | Org-scoped Postgres + S3 |
+| Retention | 30-day auto-delete | Configurable per org |
+| RBAC | — | 5-role system |
+| Report formats | Gap chart + CSV | HTML + JSON + CSV |
 
 ---
 
@@ -42,7 +67,55 @@ CC6.1 · 3 IAM users without MFA
 ```
 
 Your auditor sees the endpoint, the timestamp, the hash, and the raw response.
-The scanner is open-source, they can run the same call themselves.
+The scanner is open-source, they can run the same call themselves & verify the output matches independently
+
+<img width="1492" height="812" alt="image" src="https://github.com/user-attachments/assets/5bfaa944-4808-4d6f-a900-1abff37c29c1" />
+
+---
+
+## Why open-source
+
+We believe Automation is a commodity. Verifiability is the bottleneck.
+
+Any tool can connect to AWS and return a pass/fail list. What matters 
+is whether your auditor can independently confirm where the finding 
+came from without trusting your vendor's dashboard, in a customizable way built for you. Fast, and affordable. Proving Trust in a verifiable way is the biggest thing any company can do to grow explosively.
+
+The free scanner is open-source because there is no reason to lock it 
+behind one. The scan is not the moat. The evidence pipeline, the custom 
+controls builder, and Gideon are.
+
+---
+
+## Custom controls
+
+Custom controls let you encode your own requirements as deterministic 
+checks, running on the same SHA-256 evidence pipeline as built-in controls.
+User: "Require CloudWatch logs to retain at least 90 days"
+
+↓
+
+Gideon drafts a structured control definition
+
+↓
+
+Backend validates against supported check catalog
+
+↓
+
+Deterministic code evaluates — model never touches pass/fail logic
+
+↓
+
+Runs automatically on every future scan, versioned, SHA-256 signed
+
+Competitors gate this behind enterprise tiers or require Python. 
+Loxe's custom controls builder is available to every design partner 
+from day one.
+
+<img width="1512" height="802" alt="image" src="https://github.com/user-attachments/assets/a43d19c9-ab11-42b6-ac2f-c30fb00da694" />
+
+<img width="1512" height="802" alt="image" src="https://github.com/user-attachments/assets/118b6fc5-3d28-4558-b0ea-55b6e9583c6e" />
 
 ---
 
@@ -67,8 +140,8 @@ migrations/
 └── 0003_access_log.sql    # Data access audit log
 ```
 
-The paid analysis pipeline (Anthropic prompts, report generation, Gideon,
-Stripe, auth) is not in this repo. The scanner, frontend, and control
+The paid platform (report generation, Gideon,
+Stripe, RBAC, org workspaces) is not in this repo. The scanner, frontend, and control
 mapping are fully open, your auditor can verify exactly what API calls
 we make and how findings map to controls.
 
@@ -76,11 +149,16 @@ we make and how findings map to controls.
 
 ## Stack
 
-Cloudflare Workers · D1 (SQLite at edge) · R2 (report storage) ·
-Cloudflare Queues (parallel analysis) · Stripe Checkout · Anthropic API
+**Open Source** 
+Cloudflare Workers, D1 (SQLite at edge), R2 (report storage) ·
+Cloudflare Queues (parallel analysis), Stripe Checkout
 
-No VM. No container. No persistent process. Stateless by design.
+Open Source Platform: No VM. No container. No persistent process. Stateless by design.
 Rate limit: 5 scans / ExternalId / day.
+
+**Design Partner platform:**
+Next.js / Vercel frontend, Python FastAPI on AWS ECS Fargate, 
+Org-scoped Postgres, S3, Anthropic Claude API, Stripe
 
 ---
 
@@ -136,9 +214,19 @@ Rate limit: 5 scans / ExternalId / day. 1 concurrent scan per ExternalID.
 
 ## Data & privacy
 
-Every access to your scan data is logged and visible to you on the scan page.
-You can delete all scan data instantly, one button, no email required.
-Full data policy: [loxeai.com/methodology#data](https://loxeai.com/methodology#data)
+- Evidence lives in Cloudflare D1, auto-deleted after 30 days
+- Reports in Cloudflare R2, auto-deleted after 30 days
+- Long-lived AWS credentials are never retained
+- IAM role sessions are 1-hour TTL, never persisted after scan
+- Every data access is logged and visible to you on the scan page
+- One-click deletion: wipes all evidence, findings, and report immediately
+
+Design Partner platform: evidence in org-scoped Postgres, reports in 
+private S3, retention configurable per org. Gideon receives only an 
+anonymized findings summary per session,  no account IDs, ARNs, or raw 
+evidence. Session context discarded on session end.
+
+Full policy: [loxeai.com/docs](loxeai.com/docs)
 
 ---
 
@@ -146,3 +234,5 @@ Full data policy: [loxeai.com/methodology#data](https://loxeai.com/methodology#d
 
 Built by [Arjav Mehta](https://www.linkedin.com/in/arjav-mehta-175284258/) ·
 [mehta.arja@northeastern.edu](mailto:mehta.arja@northeastern.edu)
+
+Design partner inquiries: [loxeai.com](https://loxeai.com)
