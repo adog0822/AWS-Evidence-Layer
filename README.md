@@ -1,4 +1,4 @@
-# LoxeAI, A Customizable, Verifiable, & Faster Compliance Agent for your first SOC 2 audit
+# LoxeAI, A Customizable, Verifiable, & Faster SOC 2 Compliance Agent
 
 Your first SOC 2, Done your Way
 Read-only scan across 12 AICPA Trust Services Criteria, heuristic scoring in
