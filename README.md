@@ -14,7 +14,7 @@ minutes, full api-traceable report unlocked with paid report.
 2. Paste the Role ARN, we scan 15 AWS services across 6 regions & map to 12 Core SOC 2 Controls.
 3. Free gap report in minutes: 12 controls scored, evidence catalog, gap chart
 
-**LoxeAI Full platform (Design Partner) ($349):**
+**LoxeAI Full platform ($349):**
 Everything in the free tier, plus a full compliance workspace built 
 around your specific AWS environment:
 - SHA-256 signed, API-traceable evidence your auditor can verify 
@@ -41,7 +41,7 @@ Your data deletes automatically after 30 days, or instantly on request.
 
 ## Two-tier architecture
 
-| | Free (Open-Source) | Design Partner ($349) |
+| | Free (Open-Source) | Paid ($349) |
 |---|---|---|
 | AWS services | 15+ | 40+ (ECS, EKS, RDS, SQS, and more) |
 | Controls | 12 core SOC 2 | 12 built-in + custom controls |
@@ -156,7 +156,7 @@ Cloudflare Queues (parallel analysis), Stripe Checkout
 Open Source Platform: No VM. No container. No persistent process. Stateless by design.
 Rate limit: 5 scans / ExternalId / day.
 
-**Design Partner platform:**
+**Paid platform:**
 Next.js / Vercel frontend, Python FastAPI on AWS ECS Fargate, 
 Org-scoped Postgres, S3, Anthropic Claude API, Stripe
 
